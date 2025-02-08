@@ -13,15 +13,9 @@ const NavBar = () => {
       <ul
         tabIndex={0}
         class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-        <li><a>Item 1</a></li>
-        <li>
-          <a>Parent</a>
-          <ul className="p-2">
-            <li><a>Submenu 1</a></li>
-            <li><a>Submenu 2</a></li>
-          </ul>
-        </li>
-        <li><a>Item 3</a></li>
+        <Link to="/" className="text-lg"><li><a>Home</a></li></Link>
+        
+        <Link to="/about" className="text-lg"><li><a>About</a></li></Link>
       </ul>
     </div>
     <a className="btn btn-ghost text-xl">IoT Cloud Platform</a>
@@ -29,21 +23,13 @@ const NavBar = () => {
   <div className="navbar-center hidden lg:flex">
     <ul className="menu menu-horizontal px-1">
       <Link to="/" className="text-lg"><li><a>Home</a></li></Link>
-      <li>
-        <details>
-          <summary>Parent</summary>
-          <ul className="p-2">
-            <li><a>Submenu 1</a></li>
-            <li><a>Submenu 2</a></li>
-          </ul>
-        </details>
-      </li>
+    
       <Link to="/about" className="text-lg"><li><a>About</a></li></Link>
     </ul>
   </div>
   <div className="navbar-end">
-    <a className="btn">SignUp</a>
-    <a className="btn">Login</a>
+  <Link to="/register"><a className="btn">Register</a></Link>
+  <Link to="/login"><a className="btn">Login</a></Link>
   </div>
 </div>
     </div>
