@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SocialLogin from '../shared/SocialLogin';
 
 export const Register = () => {
   // State for tracking form input values
@@ -61,6 +62,7 @@ export const Register = () => {
         
         <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl mt-4">Register</button>
       </form>
+      <SocialLogin></SocialLogin>
     </div>
   );
 }
