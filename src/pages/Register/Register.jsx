@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SocialLogin from '../shared/SocialLogin';
+import { useSignInWithGoogle } from 'react-firebase-hooks/auth';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AuthContext from '../../context/AuthContext/AuthContext';
+import auth from '../../firebase/firebase.init';
 
 export const Register = () => {
   // State for tracking form input values
@@ -7,6 +11,29 @@ export const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
+  console.log('in signIn page', location)
+  let from = location.state?.from?.pathname || "/";
+  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
+  const handleSignIn = e => {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.email.value;
+    const password = form.password.value;
+    console.log(email, password);
+
+    singInUser(email, password)
+        .then(result => {
+            console.log('sign in', result.user)
+            navigate(from);
+        })
+        .catch(error => {
+            console.log(error);
+        })
+
+}
+
 
   return (
     <div className='w-full max-w-md mx-auto border-2 p-4 rounded-lg mt-8'>

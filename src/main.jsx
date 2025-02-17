@@ -12,6 +12,7 @@ import { Register } from "./pages/Register/Register";
 import { Login } from "./pages/Login/Login";
 import AuthProvider from "./context/AuthContext/AuthProvider";
 import Features from "./pages/Features/Features";
+import PrivateRoute from "./privateRoute/PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -36,7 +37,9 @@ const router = createBrowserRouter([
       },
       {
         path: "features",
-        element: <Features />,
+        element: <PrivateRoute>
+            <Features></Features>
+        </PrivateRoute>,
       },
     ],
   },

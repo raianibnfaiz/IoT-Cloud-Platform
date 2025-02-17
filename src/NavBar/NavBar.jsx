@@ -51,7 +51,7 @@ const NavBar = () => {
             <li>
               <details className="relative">
                 <summary className='text-lg '>
-                  <button className='btn-info'><a className="btn">Developers</a></button>
+                  <button className=''><a className="btn btn-outline btn-primary">Developers</a></button>
                 </summary>
                 <ul className="bg-base-100 rounded-t-none p-2">
                   <li><a>Link 1</a></li>
@@ -62,7 +62,7 @@ const NavBar = () => {
             <li>
               <details className="relative">
                 <summary className='text-lg '>
-                  <button className='btn-outline btn-info '><a className="btn">Features</a></button>
+                  <button className=' '><a className="btn btn-outline btn-primary">Features</a></button>
                 </summary>
                 <ul className="bg-base-100 rounded-t-none p-2">
                   <li><a>Link 1</a></li>
@@ -73,7 +73,7 @@ const NavBar = () => {
             <li>
               <details className="relative">
                 <summary className='text-lg '>
-                  <button className='btn-outline btn-info '><a className="btn">Enterprise</a></button>
+                  <button className=' '><a className=" btn btn-outline btn-primary">Enterprise</a></button>
                 </summary>
                 <ul className="bg-base-100 rounded-t-none p-2">
                   <li><a>Link 1</a></li>
@@ -90,7 +90,7 @@ const NavBar = () => {
                     </> :
                     <>
                       <Link to="/register"><a className="btn">Sign Up</a></Link>
-                      <Link to="/login"><button className='btn-primary'><a className="btn">Contact Sales</a></button></Link>
+                      <Link to="/login"><button className=''><a className="btn btn-primary">Contact Sales</a></button></Link>
                     </>
                 }
   
