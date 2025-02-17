@@ -28,16 +28,32 @@ const NavBar = () => {
         class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
         <Link to="/" className="text-lg"><li><a>Home</a></li></Link>
         
-        <Link to="/about" className="text-lg"><li><a>About</a></li></Link>
       </ul>
     </div>
-    <a className="btn btn-ghost text-xl">IoT Cloud Platform</a>
+    <a className="btn btn-ghost text-2xl">BJIT IoT Cloud Platform</a>
   </div>
   <div className="navbar-center hidden lg:flex">
     <ul className="menu menu-horizontal px-1">
       <Link to="/" className="text-lg"><li><a>Home</a></li></Link>
-    
-      <Link to="/about" className="text-lg"><li><a>About</a></li></Link>
+      <li>
+        <details>
+          <summary className='text-lg '><button className='btn-accent'><a className="btn">Developers</a></button></summary>
+          <ul className="bg-base-100 rounded-t-none p-2">
+            <li><a>Link 1</a></li>
+            <li><a>Link 2</a></li>
+          </ul>
+        </details>
+      </li>
+      
+      <li>
+        <details>
+          <summary className='text-lg '><button className='btn-outline btn-accent '><a className="btn">Features</a></button></summary>
+          <ul className="bg-base-100 rounded-t-none p-2">
+            <li><a>Link 1</a></li>
+            <li><a>Link 2</a></li>
+          </ul>
+        </details>
+      </li>
     </ul>
   </div>
   <div className="navbar-end">
@@ -46,8 +62,8 @@ const NavBar = () => {
                         <button onClick={handleSignOut} className="btn">Sign out</button>
                     </> :
                     <>
-                      <Link to="/register"><a className="btn">SignIn</a></Link>
-                      {/* <Link to="/login"><a className="btn">Signin</a></Link> */}
+                      <Link to="/register"><a className="btn">Sign Up</a></Link>
+                      <Link to="/login"><button className='btn-primary'><a className="btn">Contact Sales</a></button></Link>
                     </>
                 }
   
