@@ -3,7 +3,7 @@ import React from 'react'
 const Timeline = () => {
   return (
     <div className="bg-gradient-to-r from-gray-800 to-black-100 py-20 m-10 p-10">
-        <h2 className="text-4xl font-bold text-center text-white mb-10">Our Key Features</h2>
+        <h2 className="text-4xl font-bold text-center text-white mb-10">Our Services</h2>
         <div className="flex flex-col lg:flex-row justify-center items-center ">
         <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
         <li>
@@ -21,7 +21,7 @@ const Timeline = () => {
             </div>
             <div className="timeline-start mb-10 md:text-end">
             <time className="font-mono italic text-orange-500">Home Automation</time>
-            <div className="text-lg font-black">Our Services</div>
+            <div className="text-lg font-black">Integrating many devices into one cohesive system</div>
             BJIT IoT Cloud Platform offers a range of significant features, including a user-friendly interface for designing custom applications,
         real-time data monitoring and analytics to optimize device usage, and robust security protocols for secure data transmission.
         Connectivity between devices and the cloud is facilitated through our extensive libraries, ensuring seamless integration and efficient operation.

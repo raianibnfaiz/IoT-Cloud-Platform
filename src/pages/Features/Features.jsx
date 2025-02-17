@@ -34,7 +34,7 @@ const Features = () =>{
                         transition={{ duration: 0.5, delay: index * 0.2 }}
                     >
                         <h3 className="text-2xl font-semibold text-yellow-600 text-center py-3">{feature.title}</h3>
-                        <p className="text-gray-300 text-center font-mono">{feature.description}</p>
+                        <p className="text-gray-300 text-center font-roboto ">{feature.description}</p>
                     </motion.div>
                 ))}
             </div>

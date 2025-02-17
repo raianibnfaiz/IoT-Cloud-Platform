@@ -9,7 +9,7 @@ export const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   return (
-    <div className='w-full max-w-md mx-auto border-2 p-4 rounded-lg'>
+    <div className='w-full max-w-md mx-auto border-2 p-4 rounded-lg mt-8'>
       <h1 className='text-center text-amber-50 mb-2'>Please Register</h1>
       <form className="flex flex-col items-center">
         <fieldset className="fieldset w-full">
@@ -60,7 +60,7 @@ export const Register = () => {
           {!confirmPassword && <p className="fieldset-label text-red-300">Required</p>} 
         </fieldset>
         
-        <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl mt-4">Register</button>
+        <button className="btn btn-xs btn-success sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl mt-4">Register</button>
       </form>
       <SocialLogin></SocialLogin>
     </div>
