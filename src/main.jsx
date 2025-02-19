@@ -13,6 +13,10 @@ import { Login } from "./pages/Login/Login";
 import AuthProvider from "./context/AuthContext/AuthProvider";
 import Features from "./pages/Features/Features";
 import PrivateRoute from "./privateRoute/PrivateRoute";
+import Profile from "./pages/Profile/Profile";
+import ViewAllPurchases from "./pages/Profile/ViewAllPurchases";
+import EditBillingInformation from "./pages/Profile/EditBillingInformation";
+import Settings from "./pages/Settings/Settings";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +43,30 @@ const router = createBrowserRouter([
         path: "features",
         element: <PrivateRoute>
             <Features></Features>
+        </PrivateRoute>,
+      },
+      {
+        path: "profile",
+        element: <PrivateRoute>
+            <Profile></Profile>
+        </PrivateRoute>,
+      },
+      {
+        path: "view-all-purchases",
+        element: <PrivateRoute>
+            <ViewAllPurchases></ViewAllPurchases>
+        </PrivateRoute>,
+      },
+      {
+        path: "edit-billing-information",
+        element: <PrivateRoute>
+            <EditBillingInformation></EditBillingInformation>
+        </PrivateRoute>,
+      },
+      {
+        path: "settings",
+        element: <PrivateRoute>
+            <Settings></Settings>
         </PrivateRoute>,
       },
     ],

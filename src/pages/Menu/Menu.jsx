@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 
 const Menu = () => {
     return (
@@ -23,7 +24,8 @@ const Menu = () => {
               </a>
             </li>
             <li>
-              <a className="tooltip" data-tip="Details">
+              <Link to = '/settings'>
+              <a className="tooltip" data-tip="Settings">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -38,7 +40,7 @@ const Menu = () => {
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-              </a>
+              </a></Link>
             </li>
             <li>
               <a className="tooltip" data-tip="Stats">
