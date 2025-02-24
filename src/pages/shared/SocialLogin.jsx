@@ -1,6 +1,5 @@
-import React, { useContext } from 'react'
+import React, { useContext } from 'react';
 import AuthContext from '../../context/AuthContext/AuthContext';
-
 import { FaGoogle } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -8,15 +7,15 @@ const SocialLogin = () => {
     const { singInWithGoogle } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state || "/";
-    const handleGoogleSignIn = () => {
-        singInWithGoogle()
-            .then(result => {
-                console.log(result.user)
-            })
-            .catch(error => {
-                console.log(error.message)
-            })
+    const from = location.state?.from || "/"; // Redirect location after login
+
+    const handleGoogleSignIn = async () => {
+        try {
+            await singInWithGoogle();
+            navigate('/'); // Navigate to the home page after successful login
+        } catch (error) {
+            console.error("Error during Google sign-in:", error.message);
+        }
     }
 
     return (

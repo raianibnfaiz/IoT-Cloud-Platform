@@ -17,6 +17,7 @@ import Profile from "./pages/Profile/Profile";
 import ViewAllPurchases from "./pages/Profile/ViewAllPurchases";
 import EditBillingInformation from "./pages/Profile/EditBillingInformation";
 import Settings from "./pages/Settings/Settings";
+import DeveloperZone from "./pages/DeveloperZone/DeveloperZone";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,12 @@ const router = createBrowserRouter([
         path: "settings",
         element: <PrivateRoute>
             <Settings></Settings>
+        </PrivateRoute>,
+      },
+      {
+        path: "developer",
+        element: <PrivateRoute>
+            <DeveloperZone></DeveloperZone>
         </PrivateRoute>,
       },
     ],

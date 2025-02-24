@@ -5,40 +5,70 @@ import auth from '../../firebase/firebase.init';
 
 const googleProvider = new GoogleAuthProvider();
 const AuthProvider = ({ children }) => {
-const [user, setUser] = useState(null);
-const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
+    const singInWithGoogle = async () => {
+        setLoading(true);
+        const result = await signInWithPopup(auth, googleProvider);
+        const idToken = await result.user.getIdToken();
+        // Store the token in session storage
+       
+        // Alternatively, you can store it in cookies
+        // document.cookie = `authToken=${idToken}; path=/;`;
 
-const singInWithGoogle = () => {
-    setLoading(true);
-    return signInWithPopup(auth, googleProvider)
-}
+        const response = await fetch("https://cloud-platform-server-for-bjit.onrender.com/users/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+                user_email: result.user.email,
+                auth_token: idToken
+            }),
+        });
 
-const signOutUser = () => {
-    setLoading(true);
-    return signOut(auth);
-}
-const authInfo = {
-    user,
-    loading,
-    singInWithGoogle,
-    signOutUser
-}
-useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setUser(user);
+        const data = await response.json();
+
+        if (data.token) {
+            console.log("Server Response:", data);
+            setUser(data.user);
+            sessionStorage.setItem('authToken', data.token);
+        } else {
+            throw new Error("Login failed: " + data.message);
+        }
+
         setLoading(false);
-    });
-    return () => {
-        unsubscribe();
-    }
-});
+    };
 
-  return (
-    <AuthContext.Provider value={authInfo}>
-        {children}
-    </AuthContext.Provider>
-  )
+    const signOutUser = () => {
+        setLoading(true);
+        return signOut(auth);
+    };
+    
+    const authInfo = {
+        user,
+        loading,
+        singInWithGoogle,
+        signOutUser
+    };
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+            setLoading(false);
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    return (
+        <AuthContext.Provider value={authInfo}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
-export default AuthProvider
+export default AuthProvider;

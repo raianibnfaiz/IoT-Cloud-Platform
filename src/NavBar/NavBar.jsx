@@ -1,36 +1,59 @@
-import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import AuthContext from '../context/AuthContext/AuthContext';
+import React, { useContext, useState } from "react";
+import { Link } from "react-router-dom";
+import AuthContext from "../context/AuthContext/AuthContext";
 
 const NavBar = () => {
   const { user, signOutUser } = useContext(AuthContext);
-  
-  console.log(user)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to control dropdown visibility
+
   const handleSignOut = () => {
     signOutUser()
-        .then(() => {
-            console.log('successful sign out')
-        })
-        .catch(error => {
-            console.log('failed to sign out .stay here. dont leave me alone')
-        })
-}
+      .then(() => {
+        console.log("successful sign out");
+      })
+      .catch((error) => {
+        console.log("failed to sign out. stay here. don't leave me alone");
+      });
+  };
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen((prev) => !prev); // Toggle dropdown visibility
+  };
+
+  const handleDropdownOptionClick = () => {
+    setIsDropdownOpen(false); // Close the dropdown when an option is clicked
+  };
+
   return (
     <div>
-        <div className="navbar bg-base-100 shadow-sm">
-  <div className="navbar-start">
-    <div className="dropdown">
-      <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
-      </div>
-      
-    </div>
-    <a className="btn btn-ghost text-2xl tracking-wide">BJIT IoT Cloud Platform</a>
-  </div>
-  <div className="navbar-center hidden lg:flex">
-  <ul className="menu menu-horizontal px-1">
+      <div className="navbar bg-base-100 shadow-sm">
+        <div className="navbar-start">
+          <div className="dropdown">
+            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h8m-8 6h16"
+                />
+              </svg>
+            </div>
+          </div>
+          <a className="btn btn-ghost text-2xl tracking-wide">
+            BJIT IoT Cloud Platform
+          </a>
+        </div>
+        <div className="navbar-center hidden lg:flex">
+          <ul className="menu menu-horizontal px-1">
             <li>
-              <Link to="/" className="tooltip flex flex-col items-center">
+              <Link to="/" className=" flex flex-col items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -49,56 +72,93 @@ const NavBar = () => {
               </Link>
             </li>
             <li>
+              <details className="relative" open={isDropdownOpen}>
+                <summary
+                  className="text-lg "
+                  onClick={handleDropdownToggle} // Toggle dropdown on click
+                >
+                  <button className="">
+                    <a className="btn btn-outline btn-primary">Developers</a>
+                  </button>
+                </summary>
+                {isDropdownOpen && (
+                  <ul className="bg-base-100 rounded-t-none p-2">
+                    <li>
+                      <Link to='/developer' onClick={handleDropdownOptionClick}>
+                        Developer Zone
+                      </Link>
+                    </li>
+                    {/* You can add more options here */}
+                  </ul>
+                )}
+              </details>
+            </li>
+            {/* Additional Menu Items Similar to Above */}
+            <li>
               <details className="relative">
-                <summary className='text-lg '>
-                  <button className=''><a className="btn btn-outline btn-primary">Developers</a></button>
+                <summary className="text-lg ">
+                  <button className=" ">
+                    <a className="btn btn-outline btn-primary">Features</a>
+                  </button>
                 </summary>
                 <ul className="bg-base-100 rounded-t-none p-2">
-                  <li><a>Link 1</a></li>
-                  <li><a>Link 2</a></li>
+                  <li>
+                    <a>Link 1</a>
+                  </li>
+                  <li>
+                    <a>Link 2</a>
+                  </li>
                 </ul>
               </details>
             </li>
             <li>
               <details className="relative">
-                <summary className='text-lg '>
-                  <button className=' '><a className="btn btn-outline btn-primary">Features</a></button>
+                <summary className="text-lg ">
+                  <button className=" ">
+                    <a className=" btn btn-outline btn-primary">Enterprise</a>
+                  </button>
                 </summary>
                 <ul className="bg-base-100 rounded-t-none p-2">
-                  <li><a>Link 1</a></li>
-                  <li><a>Link 2</a></li>
-                </ul>
-              </details>
-            </li>
-            <li>
-              <details className="relative">
-                <summary className='text-lg '>
-                  <button className=' '><a className=" btn btn-outline btn-primary">Enterprise</a></button>
-                </summary>
-                <ul className="bg-base-100 rounded-t-none p-2">
-                  <li><a>Link 1</a></li>
-                  <li><a>Link 2</a></li>
+                  <li>
+                    <a>Link 1</a>
+                  </li>
+                  <li>
+                    <a>Link 2</a>
+                  </li>
                 </ul>
               </details>
             </li>
           </ul>
-  </div>
-  <div className="navbar-end">
-  {
-                    user ? <>
-                        <Link to="/profile"><button className="btn">Profile</button></Link>
-                        <button onClick={handleSignOut} className="btn">Sign out</button>
-                    </> :
-                    <>
-                      <Link to="/register"><a className="btn">Sign Up</a></Link>
-                      <Link to="/login"><button className=''><a className="btn btn-primary">Contact Sales</a></button></Link>
-                    </>
-                }
-  
-  </div>
-</div>
+        </div>
+        <div className="navbar-end">
+          {user ? (
+            <>
+              <Link to="/profile">
+                <button className="btn">Billing</button>
+              </Link>
+              <Link to="/profile">
+                <button className="btn">Profile</button>
+              </Link>
+              <button onClick={handleSignOut} className="btn">
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/register">
+                <a className="btn">Sign Up</a>
+              </Link>
+              <Link to="/login">
+                <button className="">
+                  <a className="btn btn-primary">Contact Sales</a>
+                </button>
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default NavBar
+export default NavBar;
