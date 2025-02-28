@@ -12,6 +12,11 @@ const AuthProvider = ({ children }) => {
         setLoading(true);
         const result = await signInWithPopup(auth, googleProvider);
         const idToken = await result.user.getIdToken();
+        const name = result.user.displayName;
+        sessionStorage.setItem('username', JSON.stringify(name));
+        sessionStorage.setItem('userEmail', JSON.stringify(result.user.email));
+        sessionStorage.setItem('userPhoto', JSON.stringify(result.user.photoURL));
+        
         // Store the token in session storage
        
         // Alternatively, you can store it in cookies
@@ -32,9 +37,12 @@ const AuthProvider = ({ children }) => {
         const data = await response.json();
 
         if (data.token) {
-            console.log("Server Response:", data);
+            console.log("Server Response Token:", data.token);
             setUser(data.user);
             sessionStorage.setItem('authToken', data.token);
+            sessionStorage.setItem('user_id', data.user.user_id);
+           
+            
         } else {
             throw new Error("Login failed: " + data.message);
         }

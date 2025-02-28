@@ -133,7 +133,7 @@ const NavBar = () => {
         <div className="navbar-end">
           {user ? (
             <>
-              <Link to="/profile">
+              <Link to="/billing">
                 <button className="btn">Billing</button>
               </Link>
               <Link to="/profile">

@@ -12,6 +12,7 @@
   "dependencies": {
     "@firebase/auth": "^1.9.0",
     "@tailwindcss/vite": "^4.0.4",
+    "axios": "^1.7.9",
     "firebase": "^11.3.1",
     "framer-motion": "^12.4.2",
     "react": "^19.0.0",

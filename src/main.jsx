@@ -14,10 +14,11 @@ import AuthProvider from "./context/AuthContext/AuthProvider";
 import Features from "./pages/Features/Features";
 import PrivateRoute from "./privateRoute/PrivateRoute";
 import Profile from "./pages/Profile/Profile";
-import ViewAllPurchases from "./pages/Profile/ViewAllPurchases";
-import EditBillingInformation from "./pages/Profile/EditBillingInformation";
+import ViewAllPurchases from "./pages/Billing/ViewAllPurchases";
+import EditBillingInformation from "./pages/Billing/EditBillingInformation";
 import Settings from "./pages/Settings/Settings";
 import DeveloperZone from "./pages/DeveloperZone/DeveloperZone";
+import Billing from "./pages/Billing/Billing";
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,12 @@ const router = createBrowserRouter([
         path: "profile",
         element: <PrivateRoute>
             <Profile></Profile>
+        </PrivateRoute>,
+      },
+      {
+        path: "billing",
+        element: <PrivateRoute>
+            <Billing></Billing>
         </PrivateRoute>,
       },
       {
