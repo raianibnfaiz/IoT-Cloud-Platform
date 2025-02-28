@@ -12,7 +12,7 @@ const SocialLogin = () => {
     const handleGoogleSignIn = async () => {
         try {
             await singInWithGoogle();
-            navigate('/'); // Navigate to the home page after successful login
+            navigate('/dashboard'); // Navigate to the dashboard page after successful login
         } catch (error) {
             console.error("Error during Google sign-in:", error.message);
         }

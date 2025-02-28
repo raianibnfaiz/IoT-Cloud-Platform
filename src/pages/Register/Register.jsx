@@ -4,6 +4,7 @@ import { useSignInWithGoogle } from 'react-firebase-hooks/auth';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthContext from '../../context/AuthContext/AuthContext';
 import auth from '../../firebase/firebase.init';
+import Navbar from '../../NavBar/NavBar';
 
 export const Register = () => {
   // State for tracking form input values
@@ -26,7 +27,7 @@ export const Register = () => {
     singInUser(email, password)
         .then(result => {
             console.log('sign in', result.user)
-            navigate(from);
+            navigate('/dashboard'); // Navigate to the dashboard page after successful login
         })
         .catch(error => {
             console.log(error);
@@ -36,7 +37,9 @@ export const Register = () => {
 
 
   return (
-    <div className='w-full max-w-md mx-auto border-2 p-4 rounded-lg mt-8'>
+   <div>
+    <Navbar></Navbar>
+       <div className='w-full max-w-md mx-auto border-2 p-4 rounded-lg mt-8'>
       <h1 className='text-center text-amber-50 mb-2'>Please Register</h1>
       <form className="flex flex-col items-center">
         <fieldset className="fieldset w-full">
@@ -91,5 +94,6 @@ export const Register = () => {
       </form>
       <SocialLogin></SocialLogin>
     </div>
+   </div>
   );
 }

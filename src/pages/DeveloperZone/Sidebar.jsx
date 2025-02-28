@@ -8,16 +8,12 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
             <button onClick={closeSidebar} className="text-white text-xl float-right">
                 &times; {/* Close (X) icon */}
             </button>
-            <h2 className="text-white text-2xl font-bold mb-4">Dashboard</h2>
+            <h2 className="text-white text-2xl font-bold mb-4">Widget List</h2>
             <ul className="space-y-2">
                 <li>
                     <WidgetDropdown /> {/* Add WidgetDropdown here */}
                 </li>
-                <li>
-                    <Link to="/developer" className="text-gray-300 hover:bg-gray-700 hover:text-white p-2 rounded block">
-                        My Templates
-                    </Link>
-                </li>
+               
                 {/* Add more sidebar items as needed */}
             </ul>
         </div>

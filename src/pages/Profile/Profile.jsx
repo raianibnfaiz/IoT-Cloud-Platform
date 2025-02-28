@@ -10,10 +10,11 @@ const Profile = () => {
     const userEmail = sessionStorage.getItem('userEmail');
     const user_id = sessionStorage.getItem('user_id');
     const photoURL = sessionStorage.getItem('userPhoto');
+    const token = sessionStorage.getItem('authToken');
     const newPhotoURL = photoURL ? photoURL.replace(/"/g, '') : null;
     const navigate = useNavigate();
     
-    console.log("User Data ->", user_id, username, userEmail, newPhotoURL);
+    console.log("User Data ->", user_id, username, userEmail, newPhotoURL, token);
     
     const handleLogout = () => {
         logOut(); // Call the logOut function from context

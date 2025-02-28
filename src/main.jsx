@@ -19,6 +19,9 @@ import EditBillingInformation from "./pages/Billing/EditBillingInformation";
 import Settings from "./pages/Settings/Settings";
 import DeveloperZone from "./pages/DeveloperZone/DeveloperZone";
 import Billing from "./pages/Billing/Billing";
+import TemplateDetail from "./pages/DeveloperZone/TemplateDetail";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Playground from "./pages/Playground/Playground";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +85,22 @@ const router = createBrowserRouter([
         element: <PrivateRoute>
             <DeveloperZone></DeveloperZone>
         </PrivateRoute>,
+      },
+      {
+        path: "playground",
+        element: <PrivateRoute>
+            <Playground></Playground>
+        </PrivateRoute>,
+      },
+      {
+        path: "dashboard",
+        element: <PrivateRoute>
+            <Dashboard></Dashboard>
+            </PrivateRoute>
+      },
+      {
+        path: "template/:templateId", // Add a route for template details
+        element: <TemplateDetail />, // Render TemplateDetail component
       },
     ],
   },

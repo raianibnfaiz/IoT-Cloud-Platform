@@ -1,0 +1,108 @@
+[
+    {
+      "_id": "67bef97ada8d46d2fa13700c",
+      "template_name": "TV project",
+      "template_id": "temp_7c9e3de880",
+      "widget_list": [
+        {
+          "position": {
+            "x": 8.666671752929688,
+            "y": 131.33334350585938
+          },
+          "widget_id": {
+            "_id": "67bc4f0ea4e3b8819a7d0741",
+            "name": "sensor3",
+            "image": "url",
+            "pinRequired": 1
+          },
+          "pinConfig": [
+            "67bef97ada8d46d2fa13700d"
+          ],
+          "_id": "67c03a646e076c57d82bde3a"
+        },
+        {
+          "position": {
+            "x": 281.6666564941406,
+            "y": 139.6666717529297
+          },
+          "widget_id": {
+            "_id": "67c00bda1cb744027f98583d",
+            "name": "LED Switch",
+            "image": "https://5.imimg.com/data5/SELLER/Default/2021/10/DE/FQ/TU/99344521/51c0dpobjal-sl1400--500x500.jpg",
+            "pinRequired": 1
+          },
+          "pinConfig": [
+            "67bef97ada8d46d2fa13700e"
+          ],
+          "_id": "67c03a646e076c57d82bde3b"
+        },
+        {
+          "position": {
+            "x": 155,
+            "y": 300.3333435058594
+          },
+          "widget_id": {
+            "_id": "67c01a7f2b2a93be5bd9df41",
+            "name": "Stepper Motor",
+            "image": "https://thepihut.com/cdn/shop/products/small-reduction-stepper-motor-12vdc-32-step-1-16-gearing-the-pi-hut-103575-40154070548675.jpg?crop=center&height=1200&v=1676042064&width=1200",
+            "pinRequired": 3
+          },
+          "pinConfig": [
+            "67bef97ada8d46d2fa13700f",
+            "67bef97ada8d46d2fa137010",
+            "67bef97ada8d46d2fa137011"
+          ],
+          "_id": "67c03a646e076c57d82bde3c"
+        }
+      ],
+      "virtual_pins": [
+        {
+          "_id": "67bef97ada8d46d2fa13700d",
+          "pin_id": 0,
+          "pin_name": "Virtual Pin 0",
+          "value": 0,
+          "min_value": 0,
+          "max_value": 100,
+          "is_used": true
+        },
+        {
+          "_id": "67bef97ada8d46d2fa13700e",
+          "pin_id": 1,
+          "pin_name": "Virtual Pin 1",
+          "value": 0,
+          "min_value": 0,
+          "max_value": 100,
+          "is_used": true
+        },
+        {
+          "_id": "67bef97ada8d46d2fa13700f",
+          "pin_id": 2,
+          "pin_name": "Virtual Pin 2",
+          "value": 0,
+          "min_value": 0,
+          "max_value": 100,
+          "is_used": true
+        },
+        {
+          "_id": "67bef97ada8d46d2fa137010",
+          "pin_id": 3,
+          "pin_name": "Virtual Pin 3",
+          "value": 0,
+          "min_value": 0,
+          "max_value": 100,
+          "is_used": true
+        },
+        {
+          "_id": "67bef97ada8d46d2fa137011",
+          "pin_id": 4,
+          "pin_name": "Virtual Pin 4",
+          "value": 0,
+          "min_value": 0,
+          "max_value": 100,
+          "is_used": true
+        }
+           ],
+      "__v": 1
+    }
+   
+  ]

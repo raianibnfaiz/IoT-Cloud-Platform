@@ -1,43 +1,53 @@
-import React, { useState } from 'react';
-import { FaChevronDown } from 'react-icons/fa'; // Import the dropdown icon
+import React, { useState, useEffect } from "react";
+import { FaChevronDown } from "react-icons/fa"; // Import the dropdown icon
 
 const WidgetDropdown = () => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [widgets, setWidgets] = useState([]);
 
-    const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
+  useEffect(() => {
+    const fetchWidgets = async () => {
+      try {
+        const response = await fetch(
+          "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+          {
+            method: "GET",
+            headers: {
+              accept: "application/json",
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJhaWFuaWJuZmFpekBnbWFpbC5jb20iLCJ1c2VyX2lkIjoidXNyX2MxYzhiNThmMGIiLCJpYXQiOjE3Mzk1MjQ0MTJ9.7OV0FSmG0K_vGhPvYMrthJkQFGGnQVFAGRCXS5qkumk",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setWidgets(data);
+      } catch (error) {
+        console.error("Failed to fetch widgets:", error);
+      }
     };
 
-    const widgets = [
-        { id: 1, name: 'Switch' },
-        { id: 2, name: 'Button' },
-        { id: 3, name: 'Slider' },
-        { id: 4, name: 'Checkbox' },
-        { id: 5, name: 'Text Input' },
-        { id: 6, name: 'Dropdown' },
-        { id: 7, name: 'Radio Button' },
-        { id: 8, name: 'Date Picker' },
-        { id: 9, name: 'Color Picker' },
-        { id: 10, name: 'File Upload' },
-    ];
+    fetchWidgets();
+  }, []);
 
-    return (
-        <div>
-            <button onClick={toggleDropdown} className="text-gray-300 hover:bg-gray-700 hover:text-white p-2 rounded block w-full text-left flex items-center">
-                Explore Widget Lists
-                <FaChevronDown className={`ml-2 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
-            </button>
-            {isDropdownOpen && (
-                <div className="mt-2 bg-gray-900 rounded-md shadow-lg p-2">
-                    {widgets.map(widget => (
-                        <div key={widget.id} className="py-1 text-gray-200 hover:bg-gray-700 cursor-pointer">
-                            {widget.name}
-                        </div>
-                    ))}
-                </div>
-            )}
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  return (
+    <div className="mt-2 bg-gray-900 rounded-md shadow-lg p-2">
+      {widgets.map((widget) => (
+        <div
+          key={widget._id}
+          className="py-1 text-gray-200 hover:bg-gray-700 cursor-pointer"
+        >
+          {widget.name}
         </div>
-    );
+      ))}
+    </div>
+  );
 };
 
 export default WidgetDropdown;
