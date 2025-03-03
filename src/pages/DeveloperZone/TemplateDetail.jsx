@@ -22,7 +22,48 @@ const TemplateDetails = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
+  const [templateName, setTemplateName] = useState("");
+  // Add these state variables to your component
+  const [availableWidgets, setAvailableWidgets] = useState([]);
+  const [loadingWidgets, setLoadingWidgets] = useState(false);
+  const [availableWidgetsExpanded, setAvailableWidgetsExpanded] =
+    useState(true);
+    const token = sessionStorage.getItem("authToken");
+    console.log("Available widgets:", availableWidgets);
+  // Add this function to fetch widgets from the server
+const fetchAvailableWidgets = async () => {
+    setLoadingWidgets(true);
+    try {
+        const response = await fetch(
+            "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+            {
+                method: "GET",
+                headers: {
+                    accept: "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setAvailableWidgets(data);
+        console.log("Available widgets:", data);
+    } catch (error) {
+        console.error("Failed to fetch available widgets:", error);
+    } finally {
+        setLoadingWidgets(false);
+    }
+};
 
+  // Call the function when the component mounts
+  useEffect(() => {
+    fetchAvailableWidgets();
+  }, []);
+  const handleTemplateNameChange = (e) => {
+    setTemplateName(e.target.value);
+  };
   // Sample notifications data
   const [notifications, setNotifications] = useState([
     {
@@ -39,6 +80,65 @@ const TemplateDetails = () => {
     },
     { id: 3, message: "System update available", read: true, time: "1d ago" },
   ]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            template_name: templateName,
+            widget_list: [],
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(
+          errorResponse.message || "Failed to create the template."
+        );
+      }
+
+      const data = await response.json();
+      setTemplates([...templates, data.template]); // Add the new template to the state
+      setMessage(
+        `✅ Template created successfully: ${data.template.template_name}`
+      );
+    } catch (err) {
+      console.error(err);
+      setMessage(`❌ Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+      handleCloseModal();
+
+      // Display message for 3 seconds
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+
+      fetchTemplates(); // Refresh the template list
+    }
+  };
+
+  const handleCloseModal = () => {
+    const modal = document.getElementById("templateModal");
+    modal.close(); // Close the modal
+    setTemplateName(""); // Clear input field
+  };
+
+  const handleOpenModal = () => {
+    const modal = document.getElementById("templateModal");
+    modal.showModal(); // Open the modal
+  };
 
   useEffect(() => {
     const fetchTemplateDetails = async () => {
@@ -423,9 +523,39 @@ const TemplateDetails = () => {
             </div>
           )}
         </nav>
-
+        <dialog id="templateModal" className="modal">
+          <div className="modal-box w-1/4 max-w-sm rounded-lg ">
+            <h2 className="text-2xl mb-6 font-bold text-center">
+              Create a Template
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Template Name"
+                value={templateName}
+                onChange={handleTemplateNameChange}
+                className="input w-full mb-4 p-2 border-b-2 border-gray-300 rounded-lg"
+                required
+              />
+              <button
+                type="submit"
+                className="btn btn-success w-full p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700"
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Add"}
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="btn w-full mt-4 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        </dialog>
         <div className="flex">
-          {/* Sidebar Navigation */}
           <div
             className={`${
               sidebarCollapsed ? "w-16" : "w-64"
@@ -468,13 +598,8 @@ const TemplateDetails = () => {
                   </svg>
                   {!sidebarCollapsed && <span className="ml-3">Templates</span>}
                 </div>
-
-                {/* Widgets dropdown section */}
                 <div className="space-y-1">
-                  <div
-                    className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer"
-                    onClick={() => setWidgetsExpanded(!widgetsExpanded)}
-                  >
+                  <div className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
                     <div className="flex items-center">
                       <svg
                         className="h-5 w-5 text-slate-400"
@@ -489,8 +614,29 @@ const TemplateDetails = () => {
                           d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                         />
                       </svg>
+
+                      <span className="ml-3" onClick={handleOpenModal}>
+                        Add Widgets
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {/* Widgets dropdown section */}
+                <div className="space-y-1">
+                  <div
+                    className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer"
+                    onClick={() => setWidgetsExpanded(!widgetsExpanded)}
+                  >
+                    <div className="flex items-center">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+
                       {!sidebarCollapsed && (
-                        <span className="ml-3">Widgets</span>
+                        <span className="ml-3">PickedWidgets</span>
                       )}
                     </div>
                     {!sidebarCollapsed &&
@@ -526,6 +672,71 @@ const TemplateDetails = () => {
                         )}
                       </div>
                     )}
+                </div>
+                <div className="space-y-1">
+                  <div
+                    className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer"
+                    onClick={() =>
+                      setAvailableWidgetsExpanded(!availableWidgetsExpanded)
+                    }
+                  >
+                    <div className="flex items-center">
+                      <svg
+                        className="h-5 w-5 text-slate-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                      </svg>
+                      {!sidebarCollapsed && (
+                        <span className="ml-3">Available Widgets</span>
+                      )}
+                    </div>
+                    {!sidebarCollapsed &&
+                      (availableWidgetsExpanded ? (
+                        <FaChevronDown className="h-3 w-3 text-slate-400" />
+                      ) : (
+                        <FaChevronRight className="h-3 w-3 text-slate-400" />
+                      ))}
+                  </div>
+
+                  {/* Available Widgets list dropdown */}
+                  {availableWidgetsExpanded && !sidebarCollapsed && (
+                    <div className="ml-4 pl-4 border-l border-slate-700 space-y-1 animate-fadeIn">
+                      {loadingWidgets ? (
+                        <div className="px-3 py-2 text-sm text-slate-400">
+                          Loading widgets...
+                        </div>
+                      ) : availableWidgets && availableWidgets.length > 0 ? (
+                        availableWidgets.map((widget, index) => (
+                          <div
+                            key={widget.id || index}
+                            className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer"
+                            title={widget.description || `Widget ${index + 1}`}
+                          >
+                            <div className="h-4 w-4 mr-2 bg-blue-500 rounded-full flex items-center justify-center">
+                              <span className="text-xs text-white">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <span className="truncate">
+                              {widget.name || `Widget ${index + 1}`}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-slate-400">
+                          No widgets available
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <a
@@ -630,10 +841,12 @@ const TemplateDetails = () => {
                 {templateDetails.template.template_name}
               </h1>
               <div className="flex items-center space-x-2">
-              <Link to="/playground"><button className="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-800 dark:text-white flex items-center hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                  <FaEdit className="mr-1" />
-                  <span>Edit</span>
-                </button></Link>
+                <Link to="/playground">
+                  <button className="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-800 dark:text-white flex items-center hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                    <FaEdit className="mr-1" />
+                    <span>Edit</span>
+                  </button>
+                </Link>
                 <button className="px-3 py-2 bg-red-100 dark:bg-red-900 rounded-md text-red-800 dark:text-red-200 flex items-center hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
                   <FaTrash className="mr-1" />
                   <span>Delete</span>

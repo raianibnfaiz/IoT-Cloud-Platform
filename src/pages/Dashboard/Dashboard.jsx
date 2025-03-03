@@ -8,11 +8,11 @@ const Dashboard = () => {
   const [darkMode, setDarkMode] = useState(false);
   const token = sessionStorage.getItem("authToken");
   const [loading, setLoading] = useState(false);
-  const [templateName, setTemplateName] = useState('');
+  const [templateName, setTemplateName] = useState("");
   const { user, signOutUser } = useContext(AuthContext);
   // State for sidebar collapse
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   // State for search functionality
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -27,62 +27,74 @@ const Dashboard = () => {
         console.log("failed to sign out. stay here. don't leave me alone");
       });
   };
+
+  
+  // Close menu when clicking outside
+  const closeMenu = () => {
+    setUserMenuOpen(false);
+  };
   const handleTemplateNameChange = (e) => {
     setTemplateName(e.target.value);
-};
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
+    setMessage("");
 
     try {
-        const response = await fetch('https://cloud-platform-server-for-bjit.onrender.com/users/templates', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                template_name: templateName,
-                widget_list: [],
-            }),
-        });
-
-        if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.message || 'Failed to create the template.');
+      const response = await fetch(
+        "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            template_name: templateName,
+            widget_list: [],
+          }),
         }
+      );
 
-        const data = await response.json();
-        setTemplates([...templates, data.template]); // Add the new template to the state
-        setMessage(`✅ Template created successfully: ${data.template.template_name}`);
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(
+          errorResponse.message || "Failed to create the template."
+        );
+      }
+
+      const data = await response.json();
+      setTemplates([...templates, data.template]); // Add the new template to the state
+      setMessage(
+        `✅ Template created successfully: ${data.template.template_name}`
+      );
     } catch (err) {
-        console.error(err);
-        setMessage(`❌ Error: ${err.message}`);
+      console.error(err);
+      setMessage(`❌ Error: ${err.message}`);
     } finally {
-        setLoading(false);
-        handleCloseModal();
-        
-        // Display message for 3 seconds
-        setTimeout(() => {
-            setMessage('');
-        }, 3000);
-        
-        fetchTemplates(); // Refresh the template list
+      setLoading(false);
+      handleCloseModal();
+
+      // Display message for 3 seconds
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+
+      fetchTemplates(); // Refresh the template list
     }
-};
+  };
 
-const handleCloseModal = () => {
-    const modal = document.getElementById('templateModal');
+  const handleCloseModal = () => {
+    const modal = document.getElementById("templateModal");
     modal.close(); // Close the modal
-    setTemplateName(''); // Clear input field
-};
+    setTemplateName(""); // Clear input field
+  };
 
-const handleOpenModal = () => {
-    const modal = document.getElementById('templateModal');
+  const handleOpenModal = () => {
+    const modal = document.getElementById("templateModal");
     modal.showModal(); // Open the modal
-};
-
+  };
 
   // State for notification panel
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -143,7 +155,7 @@ const handleOpenModal = () => {
         console.error("Error fetching templates:", error);
       }
     };
-  
+
     fetchTemplates();
   }, []);
 
@@ -165,8 +177,6 @@ const handleOpenModal = () => {
   const markAllAsRead = () => {
     setNotifications((prev) => prev.map((note) => ({ ...note, read: true })));
   };
-
-  
 
   // Function to toggle user menu
   const toggleUserMenu = () => {
@@ -353,87 +363,105 @@ const handleOpenModal = () => {
 
                     {/* Dropdown Menu */}
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 z-50 transition-all duration-200">
-                        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                          <p className="text-sm text-slate-800 dark:text-white font-medium">
-                            Raian Ahmed
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            raian@example.com
-                          </p>
+                      <div className="relative" onMouseLeave={closeMenu}>
+                      {/* User Profile Button */}
+                      
+                
+                      {/* Dropdown Menu */}
+                      {userMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 z-50 transition-all duration-200">
+                          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                            <p className="text-sm text-slate-800 dark:text-white font-medium">
+                              Raian Ahmed
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                              raian@example.com
+                            </p>
+                          </div>
+                          
+                          {/* Profile */}
+                          <Link
+                            to="/profile"
+                            className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                            onClick={closeMenu}
+                          >
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-2 h-4 w-4 text-slate-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                              
+                                Profile
+                              
+                            </div>
+                          </Link>
+                          
+                          {/* Settings */}
+                          <Link
+                            to="/settings"
+                            className="block w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                            onClick={closeMenu}
+                          >
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-2 h-4 w-4 text-slate-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                              Settings
+                            </div>
+                          </Link>
+                          
+                          <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                          
+                          {/* Sign out */}
+                          <button
+                            onClick={handleSignOut}
+                            className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          >
+                            <div className="flex items-center">
+                              <svg
+                                className="mr-2 h-4 w-4 text-red-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                />
+                              </svg>
+                              Sign out
+                            </div>
+                          </button>
                         </div>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <div className="flex items-center">
-                            <svg
-                              className="mr-2 h-4 w-4 text-slate-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                            Profile
-                          </div>
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <div className="flex items-center">
-                            <svg
-                              className="mr-2 h-4 w-4 text-slate-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
-                            Settings
-                          </div>
-                        </a>
-                        <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                        <button
-                          onClick={handleSignOut}
-                          href="#"
-                          className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                        >
-                          <div className="flex items-center">
-                            <svg
-                              className="mr-2 h-4 w-4 text-red-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                              />
-                            </svg>
-                            Sign out
-                          </div>
-                        </button>
-                      </div>
+                      )}
+                    </div>
                     )}
                   </div>
                 </div>
@@ -621,7 +649,6 @@ const handleOpenModal = () => {
                   onClick={handleOpenModal}
                   className="px-4 py-2 bg-emerald-500 text-white rounded-md shadow-sm hover:bg-emerald-600 flex items-center transition-colors duration-200"
                 >
-                  
                   <svg
                     className="h-5 w-5 mr-1"
                     fill="none"
@@ -640,39 +667,45 @@ const handleOpenModal = () => {
               </div>
             </div>
             {message && (
-                <div className={`alert ${message.startsWith('✅') ? 'alert-success' : 'alert-error'} mb-4`}>
-                    {message}
-                </div>
+              <div
+                className={`alert ${
+                  message.startsWith("✅") ? "alert-success" : "alert-error"
+                } mb-4`}
+              >
+                {message}
+              </div>
             )}
             <dialog id="templateModal" className="modal">
-                <div className="modal-box w-1/4 max-w-sm rounded-lg ">
-                    <h2 className="text-2xl mb-6 font-bold text-center">Create a Template</h2>
-                    <form onSubmit={handleSubmit}>
-                        <input
-                            type="text"
-                            placeholder="Template Name"
-                            value={templateName}
-                            onChange={handleTemplateNameChange}
-                            className="input w-full mb-4 p-2 border-b-2 border-gray-300 rounded-lg"
-                            required
-                        />
-                        <button
-                            type="submit"
-                            className="btn btn-success w-full p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700"
-                            disabled={loading}
-                        >
-                            {loading ? 'Creating...' : 'Add'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleCloseModal}
-                            className="btn w-full mt-4 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                    </form>
-                </div>
+              <div className="modal-box w-1/4 max-w-sm rounded-lg ">
+                <h2 className="text-2xl mb-6 font-bold text-center">
+                  Create a Template
+                </h2>
+                <form onSubmit={handleSubmit}>
+                  <input
+                    type="text"
+                    placeholder="Template Name"
+                    value={templateName}
+                    onChange={handleTemplateNameChange}
+                    className="input w-full mb-4 p-2 border-b-2 border-gray-300 rounded-lg"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-success w-full p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700"
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Add"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="btn w-full mt-4 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
             </dialog>
 
             {filteredTemplates.length === 0 ? (
@@ -696,7 +729,6 @@ const handleOpenModal = () => {
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   Try adjusting your search or create a new template.
                 </p>
-                
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -706,36 +738,37 @@ const handleOpenModal = () => {
                     className="overflow-hidden bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                   >
                     <Link
-                    to={`/template/${template._id}`}
-                    className="font-bold text-lg text-gray-300 hover:underline"
-                  >
-                    <div className="p-6 flex flex-col justify-center items-center">
-                      
-                      <div className="h-16 w-16 mb-4 text-emerald-500">
-                        <img
-                          src={
-                            template.widget_list.length > 0
-                              ? template.widget_list[0].widget_id.image
-                              : "https://via.placeholder.com/64"
-                          }
-                          alt={template.template_name}
-                          className="w-full h-full rounded-full"
-                        />
+                      to={`/template/${template._id}`}
+                      className="font-bold text-lg text-gray-300 hover:underline"
+                    >
+                      <div className="p-6 flex flex-col justify-center items-center">
+                        <div className="h-16 w-16 mb-4 text-emerald-500">
+                          <img
+                            src={
+                              template.widget_list.length > 0 &&
+                              template.widget_list[0].widget_id &&
+                              template.widget_list[0].widget_id.image
+                                ? template.widget_list[0].widget_id.image
+                                : "https://via.placeholder.com/64"
+                            }
+                            alt={template.template_name}
+                            className="w-full h-full rounded-full"
+                          />
+                        </div>
+                        <div className="mt-4 text-center">
+                          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-1 transition-colors duration-200">
+                            {template.template_name}
+                          </h3>
+                          <span className="inline-block px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs rounded-full transition-colors duration-200">
+                            {template.widget_list.length}{" "}
+                            {template.widget_list.length === 1
+                              ? "Widget"
+                              : "Widgets"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="mt-4 text-center">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-1 transition-colors duration-200">
-                          {template.template_name}
-                        </h3>
-                        <span className="inline-block px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs rounded-full transition-colors duration-200">
-                          {template.widget_list.length}{" "}
-                          {template.widget_list.length === 1
-                            ? "Widget"
-                            : "Widgets"}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                    
+                    </Link>
+
                     <div className="px-6 py-2 bg-slate-50 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-600 flex justify-between transition-colors duration-200">
                       <button className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors duration-200">
                         Edit
@@ -767,7 +800,7 @@ const handleOpenModal = () => {
                         />
                       </svg>
                     </div>
-                    <p  className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                       Create new template
                     </p>
                   </div>

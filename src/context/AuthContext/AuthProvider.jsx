@@ -50,9 +50,12 @@ const AuthProvider = ({ children }) => {
         setLoading(false);
     };
 
-    const signOutUser = () => {
+    const signOutUser = async () => {
         setLoading(true);
-        return signOut(auth);
+        await signOut(auth);
+        setUser(null);
+        setLoading(false);
+        window.location.href = '/';
     };
     
     const authInfo = {

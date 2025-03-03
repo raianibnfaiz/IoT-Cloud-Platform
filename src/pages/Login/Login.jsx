@@ -1,6 +1,7 @@
 import React from "react";
 import SocialLogin from "../shared/SocialLogin";
 import Navbar from "../../NavBar/NavBar";
+import { Link } from "react-router-dom";
 
 export const Login = () => {
   return (
@@ -8,7 +9,7 @@ export const Login = () => {
       <Navbar></Navbar>
       <section class="bg-gray-50 dark:bg-gray-900">
   <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-      <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+      <a href="#" class="flex items-center my-6  text-2xl font-semibold text-gray-900 dark:text-white">
           
           BJIT IoT Cloud Platfrom    
       </a>
@@ -42,7 +43,7 @@ export const Login = () => {
                     <SocialLogin></SocialLogin>
                   </button>
                   <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                      Don’t have an account yet? <a href="#" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
+                      Don’t have an account yet? <a class="font-medium text-primary-600 hover:underline dark:text-primary-500"><Link to="/register">Sign up</Link></a>
                   </p>
               </form>
           </div>

@@ -1,99 +1,125 @@
-import React, { useEffect, useState } from 'react';
-import SocialLogin from '../shared/SocialLogin';
-import { useSignInWithGoogle } from 'react-firebase-hooks/auth';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import AuthContext from '../../context/AuthContext/AuthContext';
-import auth from '../../firebase/firebase.init';
-import Navbar from '../../NavBar/NavBar';
+import React, { useState } from "react";
+import SocialLogin from "../shared/SocialLogin";
+import { Link } from "react-router-dom";
+import Navbar from "../../NavBar/NavBar";
 
 export const Register = () => {
   // State for tracking form input values
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const location = useLocation();
-  const navigate = useNavigate();
-  console.log('in signIn page', location)
-  let from = location.state?.from?.pathname || "/";
-  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
-  const handleSignIn = e => {
-    e.preventDefault();
-    const form = e.target;
-    const email = form.email.value;
-    const password = form.password.value;
-    console.log(email, password);
-
-    singInUser(email, password)
-        .then(result => {
-            console.log('sign in', result.user)
-            navigate('/dashboard'); // Navigate to the dashboard page after successful login
-        })
-        .catch(error => {
-            console.log(error);
-        })
-
-}
-
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   return (
-   <div>
-    <Navbar></Navbar>
-       <div className='w-full max-w-md mx-auto border-2 p-4 rounded-lg mt-8'>
-      <h1 className='text-center text-amber-50 mb-2'>Please Register</h1>
-      <form className="flex flex-col items-center">
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">Your Name</legend>
-          <input 
-            type="text" 
-            className="input w-full" 
-            placeholder="Type your name" 
-            value={name}
-            onChange={(e) => setName(e.target.value)} // Update state on input change
-          />
-          {!name && <p className="fieldset-label text-red-300">Required</p>}
-        </fieldset>
-
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">Your Email</legend>
-          <input 
-            type="text" 
-            className="input w-full" 
-            placeholder="Type your email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)} // Update state on input change
-          />
-          {!email && <p className="fieldset-label text-red-300">Required</p>}
-        </fieldset>
-
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">Password</legend>
-          <input 
-            type="password" 
-            className="input w-full" 
-            placeholder="Type password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)} // Update state on input change
-          />
-          {!password && <p className="fieldset-label text-red-300">Required</p>} 
-        </fieldset>
-        
-        <fieldset className="fieldset w-full">
-          <legend className="fieldset-legend">Confirm password</legend>
-          <input 
-            type="password" 
-            className="input w-full" 
-            placeholder="Confirm password" 
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)} // Update state on input change
-          />
-          {!confirmPassword && <p className="fieldset-label text-red-300">Required</p>} 
-        </fieldset>
-        
-        <button className="btn btn-xs btn-success sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl mt-4">Register</button>
-      </form>
-      <SocialLogin></SocialLogin>
+    <div>
+      <Navbar />
+      <section className="bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center justify-center px-2 py-1 mx-auto md:h-screen lg:py-0">
+          
+          <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+              <h1 className="text-xl font-bold text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                Create an account
+              </h1>
+              <form className="space-y-2 md:space-y-6">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="John Doe"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Your email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="name@company.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="••••••••"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="confirm-password"
+                    className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Confirm password
+                  </label>
+                  <input
+                    type="password"
+                    name="confirm-password"
+                    id="confirm-password"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="••••••••"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                >
+                  Sign Up
+                </button>
+                <button
+                  type="button"
+                  className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                >
+                  <SocialLogin />
+                </button>
+                <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-   </div>
   );
-}
+};
