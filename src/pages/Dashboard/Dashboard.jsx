@@ -526,8 +526,8 @@ const Dashboard = () => {
           >
             <div className="p-4">
               <div className="space-y-1">
-                <a
-                  href="#"
+                <Link to='/'><a
+                  
                   className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-slate-700 text-white"
                 >
                   <svg
@@ -544,9 +544,9 @@ const Dashboard = () => {
                     />
                   </svg>
                   {!sidebarCollapsed && (
-                    <span className="ml-3">Dashboards</span>
+                    <span className="ml-3">Home</span>
                   )}
-                </a>
+                </a></Link>
                 <a
                   href="#"
                   className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white"

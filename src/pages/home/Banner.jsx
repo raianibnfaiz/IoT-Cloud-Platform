@@ -30,7 +30,7 @@ const Banner = () => {
                     <p className="my-5 text-lg text-gray-300">
                     Easily build exceptional, fully customizable mobile and web IoT applications. Securely deploy and manage millions of devices worldwide
                     </p>
-                    <Link to="/features"><button className="btn btn-primary">Get Started</button></Link>
+                    <Link to="/dashboard"><button className="btn btn-primary">Get Started</button></Link>
                 </div>
             </div>
         </div>

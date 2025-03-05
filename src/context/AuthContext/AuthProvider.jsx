@@ -41,7 +41,7 @@ const AuthProvider = ({ children }) => {
             setUser(data.user);
             sessionStorage.setItem('authToken', data.token);
             sessionStorage.setItem('user_id', data.user.user_id);
-           
+            window.location.href = '/dashboard';
             
         } else {
             throw new Error("Login failed: " + data.message);

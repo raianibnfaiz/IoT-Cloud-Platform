@@ -10,7 +10,7 @@ const Navbar = () => {
   const menuItems = [
     { name: "Features", path: "/features" },
     { name: "Enterprise", path: "/enterprise" },
-    { name: "Developers", path: "/developers" },
+    { name: "Developers", path: "/dashboard" },
     { name: "Case Studies", path: "/case-studies" },
     { name: "Company", path: "/company" },
   ];
@@ -59,12 +59,10 @@ const Navbar = () => {
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
                   <div className="py-1">
-                    <Link to={`${item.path}/option1`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      {item.name} Option 1
+                    <Link to={`${item.path}/`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      {item.name} Zone
                     </Link>
-                    <Link to={`${item.path}/option2`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      {item.name} Option 2
-                    </Link>
+
                   </div>
                 </div>
               )}
@@ -79,28 +77,37 @@ const Navbar = () => {
 
         {/* Right Section - CTA Buttons */}
         <div className="flex items-center space-x-4">
-          <Link to="/contact-sales" className="px-4 py-2 bg-green-100 text-green-600 rounded-md hover:bg-green-200">
-            Contact Sales
+          <Link to="/contact-sales" className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-700">
+            Contact
           </Link>
 
           {user ? (
             <>
-              <Link to="/profile" className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+              <Link
+                to="/profile"
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+              >
                 Profile
               </Link>
               <button
                 onClick={signOutUser}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
               >
                 Sign Out
               </button>
             </>
           ) : (
             <>
-              <Link to="/register" className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+              <Link
+                to="/register"
+                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-400 transition-colors duration-200"
+              >
                 Sign Up
               </Link>
-              <Link to="/login" className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+              <Link
+                to="/login"
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-400 transition-colors duration-200"
+              >
                 Login
               </Link>
             </>
