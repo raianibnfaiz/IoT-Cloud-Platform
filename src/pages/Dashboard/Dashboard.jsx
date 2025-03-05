@@ -771,7 +771,7 @@ const Dashboard = () => {
 
                     <div className="px-6 py-2 bg-slate-50 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-600 flex justify-between transition-colors duration-200">
                       <button className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors duration-200">
-                        Edit
+                       <Link to={`/template/${template._id}`}> Edit</Link>
                       </button>
                       <button className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors duration-200">
                         Delete

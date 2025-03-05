@@ -11,6 +11,7 @@ import {
   FaEdit,
   FaPlus,
 } from "react-icons/fa";
+import AddWidgetModal from "./AddWidgetModal";
 
 const TemplateDetails = () => {
   const { templateId } = useParams();
@@ -28,34 +29,35 @@ const TemplateDetails = () => {
   const [loadingWidgets, setLoadingWidgets] = useState(false);
   const [availableWidgetsExpanded, setAvailableWidgetsExpanded] =
     useState(true);
-    const token = sessionStorage.getItem("authToken");
-    console.log("Available widgets:", availableWidgets);
+  const [virtualPins, setVirtualPins] = useState([]);
+  const token = sessionStorage.getItem("authToken");
+  console.log("Available widgets:", availableWidgets);
   // Add this function to fetch widgets from the server
-const fetchAvailableWidgets = async () => {
+  const fetchAvailableWidgets = async () => {
     setLoadingWidgets(true);
     try {
-        const response = await fetch(
-            "https://cloud-platform-server-for-bjit.onrender.com/widgets",
-            {
-                method: "GET",
-                headers: {
-                    accept: "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
+      const response = await fetch(
+        "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-        const data = await response.json();
-        setAvailableWidgets(data);
-        console.log("Available widgets:", data);
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setAvailableWidgets(data);
+      console.log("Available widgets:", data);
     } catch (error) {
-        console.error("Failed to fetch available widgets:", error);
+      console.error("Failed to fetch available widgets:", error);
     } finally {
-        setLoadingWidgets(false);
+      setLoadingWidgets(false);
     }
-};
+  };
 
   // Call the function when the component mounts
   useEffect(() => {
@@ -220,9 +222,8 @@ const fetchAvailableWidgets = async () => {
   if (loading) {
     return (
       <div
-        className={`min-h-screen flex justify-center items-center ${
-          darkMode ? "dark bg-slate-900" : "bg-slate-50"
-        }`}
+        className={`min-h-screen flex justify-center items-center ${darkMode ? "dark bg-slate-900" : "bg-slate-50"
+          }`}
       >
         <div
           className="spinner-border animate-spin inline-block w-12 h-12 border-4 rounded-full"
@@ -241,11 +242,10 @@ const fetchAvailableWidgets = async () => {
   if (!templateDetails) {
     return (
       <div
-        className={`min-h-screen p-5 ${
-          darkMode
+        className={`min-h-screen p-5 ${darkMode
             ? "dark bg-slate-900 text-white"
             : "bg-slate-50 text-slate-800"
-        }`}
+          }`}
       >
         <h1 className="text-red-500 text-2xl font-bold">
           Template not found or an error occurred.
@@ -259,6 +259,13 @@ const fetchAvailableWidgets = async () => {
       </div>
     );
   }
+  // Open the add widget modal
+  const handleOpenAddWidgetModal = () => {
+    const modal = document.getElementById("addWidgetModal");
+    if (modal) {
+      modal.showModal();
+    }
+  };
 
   return (
     <div className={`min-h-screen ${darkMode ? "dark" : ""}`}>
@@ -398,8 +405,8 @@ const fetchAvailableWidgets = async () => {
                             raian@example.com
                           </p>
                         </div>
-                        <a
-                          href="#"
+                        <Link to="/profile"><a
+
                           className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                           <div className="flex items-center">
@@ -419,8 +426,9 @@ const fetchAvailableWidgets = async () => {
                             Profile
                           </div>
                         </a>
-                        <a
-                          href="#"
+                        </Link>
+                        <Link to="/settings"><a
+
                           className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                           <div className="flex items-center">
@@ -446,6 +454,7 @@ const fetchAvailableWidgets = async () => {
                             Settings
                           </div>
                         </a>
+                        </Link>
                         <div className="border-t border-slate-100 dark:border-slate-700"></div>
                         <a
                           href="#"
@@ -494,9 +503,8 @@ const fetchAvailableWidgets = async () => {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 ${
-                      !notification.read ? "bg-slate-50 dark:bg-slate-700" : ""
-                    }`}
+                    className={`px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 ${!notification.read ? "bg-slate-50 dark:bg-slate-700" : ""
+                      }`}
                   >
                     <div className="flex justify-between">
                       <p className="text-sm text-slate-800 dark:text-white">
@@ -557,9 +565,8 @@ const fetchAvailableWidgets = async () => {
         </dialog>
         <div className="flex">
           <div
-            className={`${
-              sidebarCollapsed ? "w-16" : "w-64"
-            } min-h-screen bg-slate-800 text-white transition-all duration-300 fixed left-0 top-16 z-10`}
+            className={`${sidebarCollapsed ? "w-16" : "w-64"
+              } min-h-screen bg-slate-800 text-white transition-all duration-300 fixed left-0 top-16 z-10`}
           >
             <div className="p-4">
               <div className="space-y-1">
@@ -577,7 +584,7 @@ const fetchAvailableWidgets = async () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h2a1 1 0 001-1v-10a1 1 0 00-1-1h-4.586a1 1 0 00-.707.293l-5 5a1 1 0 00-.293.707V19a1 1 0 001 1h2z"
                     />
                   </svg>
                   {!sidebarCollapsed && <span className="ml-3">Dashboard</span>}
@@ -596,9 +603,11 @@ const fetchAvailableWidgets = async () => {
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                     />
                   </svg>
-                  {!sidebarCollapsed && <span className="ml-3">Templates</span>}
+                  {!sidebarCollapsed && <span className="ml-3"><Link to='/dashboard'>Templates</Link></span>}
                 </div>
-                <div className="space-y-1">
+
+                {/* Only show Add Widgets when sidebar is expanded */}
+                {!sidebarCollapsed && (
                   <div className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
                     <div className="flex items-center">
                       <svg
@@ -614,13 +623,13 @@ const fetchAvailableWidgets = async () => {
                           d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                         />
                       </svg>
-
                       <span className="ml-3" onClick={handleOpenModal}>
                         Add Widgets
                       </span>
                     </div>
                   </div>
-                </div>
+                )}
+
                 {/* Widgets dropdown section */}
                 <div className="space-y-1">
                   <div
@@ -628,22 +637,52 @@ const fetchAvailableWidgets = async () => {
                     onClick={() => setWidgetsExpanded(!widgetsExpanded)}
                   >
                     <div className="flex items-center">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-
+                      <svg
+                        className="h-5 w-5 text-slate-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 6h16M4 12h8m-8 6h16"
+                        />
+                      </svg>
                       {!sidebarCollapsed && (
-                        <span className="ml-3">PickedWidgets</span>
+                        <span className="ml-3">Picked Widgets</span>
                       )}
                     </div>
                     {!sidebarCollapsed &&
                       (widgetsExpanded ? (
-                        <FaChevronDown className="h-3 w-3 text-slate-400" />
+                        <svg
+                          className="h-3 w-3 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
                       ) : (
-                        <FaChevronRight className="h-3 w-3 text-slate-400" />
+                        <svg
+                          className="h-3 w-3 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
                       ))}
                   </div>
 
@@ -673,6 +712,7 @@ const fetchAvailableWidgets = async () => {
                       </div>
                     )}
                 </div>
+
                 <div className="space-y-1">
                   <div
                     className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer"
@@ -700,9 +740,33 @@ const fetchAvailableWidgets = async () => {
                     </div>
                     {!sidebarCollapsed &&
                       (availableWidgetsExpanded ? (
-                        <FaChevronDown className="h-3 w-3 text-slate-400" />
+                        <svg
+                          className="h-3 w-3 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
                       ) : (
-                        <FaChevronRight className="h-3 w-3 text-slate-400" />
+                        <svg
+                          className="h-3 w-3 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
                       ))}
                   </div>
 
@@ -710,7 +774,27 @@ const fetchAvailableWidgets = async () => {
                   {availableWidgetsExpanded && !sidebarCollapsed && (
                     <div className="ml-4 pl-4 border-l border-slate-700 space-y-1 animate-fadeIn">
                       {loadingWidgets ? (
-                        <div className="px-3 py-2 text-sm text-slate-400">
+                        <div className="px-3 py-2 text-sm text-slate-400 flex items-center">
+                          <svg
+                            className="animate-spin h-4 w-4 mr-2 text-slate-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
                           Loading widgets...
                         </div>
                       ) : availableWidgets && availableWidgets.length > 0 ? (
@@ -731,7 +815,20 @@ const fetchAvailableWidgets = async () => {
                           </div>
                         ))
                       ) : (
-                        <div className="px-3 py-2 text-sm text-slate-400">
+                        <div className="px-3 py-2 text-sm text-slate-400 flex items-center">
+                          <svg
+                            className="h-4 w-4 mr-2 text-slate-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
                           No widgets available
                         </div>
                       )}
@@ -739,10 +836,7 @@ const fetchAvailableWidgets = async () => {
                   )}
                 </div>
 
-                <a
-                  href="#"
-                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white"
-                >
+                <div className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
                   <svg
                     className="h-5 w-5 text-slate-400"
                     fill="none"
@@ -753,22 +847,27 @@ const fetchAvailableWidgets = async () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
                   {!sidebarCollapsed && (
                     <span className="ml-3">Automations</span>
                   )}
-                </a>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Main Content Area */}
           <div
-            className={`flex-1 p-6 transition-all duration-300 ${
-              sidebarCollapsed ? "ml-16" : "ml-64"
-            } pt-6`}
+            className={`flex-1 p-6 transition-all duration-300 ${sidebarCollapsed ? "ml-16" : "ml-64"
+              } pt-6`}
           >
             {/* Breadcrumb */}
             <div className="mb-6">
@@ -805,7 +904,7 @@ const fetchAvailableWidgets = async () => {
                         ></path>
                       </svg>
                       <Link
-                        to="/"
+                        to="/dashboard"
                         className="ml-1 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-500 dark:hover:text-emerald-400"
                       >
                         Templates
@@ -953,132 +1052,146 @@ const fetchAvailableWidgets = async () => {
 
             {/* Widgets List Section */}
             <div className="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6 border border-slate-200 dark:border-slate-700">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
-                  Widgets
-                </h2>
-                <button className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md flex items-center text-sm">
-                  <FaPlus className="mr-1" />
-                  <span>Add Widget</span>
-                </button>
-              </div>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
+          Widgets
+        </h2>
+        <button 
+          onClick={handleOpenAddWidgetModal}
+          className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md flex items-center text-sm"
+        >
+          <FaPlus className="mr-1" />
+          <span>Add Widget</span>
+        </button>
+      </div>
 
-              {templateDetails.template.widget_list &&
-              templateDetails.template.widget_list.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                    <thead className="bg-slate-50 dark:bg-slate-700">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                        >
-                          Name
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                        >
-                          Type
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                        >
-                          Created
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                        >
-                          Status
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
-                        >
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-                      {templateDetails.template.widget_list.map(
-                        (widget, index) => (
-                          <tr
-                            key={index}
-                            className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-slate-900 dark:text-white">
-                                {widget.widget_id?.name ||
-                                  `Widget ${index + 1}`}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-slate-500 dark:text-slate-400">
-                                {widget.widget_id?.type || "Unknown"}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-slate-500 dark:text-slate-400">
-                                {widget.widget_id?.created_at
-                                  ? new Date(
-                                      widget.widget_id.created_at
-                                    ).toLocaleDateString()
-                                  : "N/A"}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                Active
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex justify-end space-x-2">
-                                <button className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300">
-                                  <FaEdit />
-                                </button>
-                                <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                                  <FaTrash />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <svg
-                    className="mx-auto h-12 w-12 text-slate-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+      {templateDetails?.template?.widget_list &&
+        templateDetails.template.widget_list.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
+                >
+                  Name
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
+                >
+                  Type
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
+                >
+                  Created
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {templateDetails.template.widget_list.map(
+                (widget, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                  <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-white">
-                    No widgets
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Get started by adding a new widget to this template.
-                  </p>
-                  <div className="mt-6">
-                    <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md flex items-center mx-auto">
-                      <FaPlus className="mr-2" />
-                      <span>Add Widget</span>
-                    </button>
-                  </div>
-                </div>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">
+                        {widget.widget_id?.name ||
+                          `Widget ${index + 1}`}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        {widget.widget_id?.type || "Unknown"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        {widget.widget_id?.created_at
+                          ? new Date(
+                            widget.widget_id.created_at
+                          ).toLocaleDateString()
+                          : "N/A"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        Active
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-2">
+                        <button className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300">
+                          <FaEdit />
+                        </button>
+                        <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
               )}
-            </div>
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <svg
+            className="mx-auto h-12 w-12 text-slate-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-white">
+            No widgets
+          </h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Get started by adding a new widget to this template.
+          </p>
+          <div className="mt-6">
+            <button 
+              onClick={handleOpenAddWidgetModal}
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md flex items-center mx-auto"
+            >
+              <FaPlus className="mr-2" />
+              <span>Add Widget</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Include the AddWidgetModal component */}
+      <AddWidgetModal
+        templateId={templateId}
+        templateDetails={templateDetails}
+        availableWidgets={availableWidgets}
+        token={token}
+      />
+    </div>
           </div>
         </div>
       </div>

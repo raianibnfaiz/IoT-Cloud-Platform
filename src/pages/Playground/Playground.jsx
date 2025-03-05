@@ -1,78 +1,119 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { DndContext, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
+import { SortableContext, useSortable } from '@dnd-kit/sortable';
+import { restrictToWindowEdges } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
+
+const DraggableComponent = ({ component }) => {
+  const { setNodeRef, transform, listeners, isDragging } = useSortable({
+    id: component.instanceId.toString(),
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    zIndex: isDragging ? 999 : undefined,
+    cursor: 'grab',
+    position: 'absolute',
+    left: component.position.x,
+    top: component.position.y,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners}>
+      <img
+        src={component.image || '/api/placeholder/100/80'}
+        alt={component.name}
+        className="w-16 h-16 object-cover"
+      />
+      <div className="text-center font-semibold text-xs text-white">
+        {component.name}
+      </div>
+    </div>
+  );
+};
 
 const Playground = () => {
   const [components, setComponents] = useState([]);
-  const [selectedComponent, setSelectedComponent] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [activeSidebarTab, setActiveSidebarTab] = useState('components');
+  const [availableWidgets, setAvailableWidgets] = useState([]);
+  const [loadingWidgets, setLoadingWidgets] = useState(false);
   const gridRef = useRef(null);
 
-  // Sample component data
-  const availableComponents = [
-    { id: 1, name: 'Button', image: '/api/placeholder/100/80' },
-    { id: 2, name: 'Card', image: '/api/placeholder/100/80' },
-    { id: 3, name: 'Input', image: '/api/placeholder/100/80' },
-    { id: 4, name: 'Dropdown', image: '/api/placeholder/100/80' },
-    { id: 5, name: 'Modal', image: '/api/placeholder/100/80' },
-    { id: 6, name: 'Toggle', image: '/api/placeholder/100/80' },
-  ];
+  const token = sessionStorage.getItem('authToken');
 
-  const handleMouseDown = (componentId) => {
-    setSelectedComponent(componentId);
-    setIsDragging(true);
-  };
+  useEffect(() => {
+    fetchAvailableWidgets();
+  }, []);
 
-  const handleMouseMove = (e) => {
-    if (!isDragging || !gridRef.current) return;
-    
-    const rect = gridRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Snap to grid (20px grid)
-    const snappedX = Math.floor(x / 20) * 20;
-    const snappedY = Math.floor(y / 20) * 20;
-    
-    setDragPosition({ x: snappedX, y: snappedY });
-  };
-
-  const handleMouseUp = () => {
-    if (isDragging && selectedComponent) {
-      // Add component to the grid
-      const component = availableComponents.find(c => c.id === selectedComponent);
-      if (component) {
-        setComponents([
-          ...components,
-          {
-            ...component,
-            position: { ...dragPosition },
-            instanceId: Date.now() // Create a unique ID for this instance
-          }
-        ]);
+  const fetchAvailableWidgets = async () => {
+    setLoadingWidgets(true);
+    try {
+      const response = await fetch(
+        "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-      setIsDragging(false);
-      setSelectedComponent(null);
+      const data = await response.json();
+      setAvailableWidgets(data);
+    } catch (error) {
+      console.error("Failed to fetch available widgets:", error);
+    } finally {
+      setLoadingWidgets(false);
     }
   };
 
-  const handleMouseLeave = () => {
-    setIsDragging(false);
+  const handleDragEnd = (event) => {
+    const { active, delta } = event;
+    setComponents((components) =>
+      components.map((component) =>
+        component.instanceId.toString() === active.id
+          ? {
+              ...component,
+              position: {
+                x: component.position.x + delta.x,
+                y: component.position.y + delta.y,
+              },
+            }
+          : component
+      )
+    );
   };
 
-  // Create the dotted grid background
+  const handleAddComponent = (widget) => {
+    setComponents([
+      ...components,
+      {
+        ...widget,
+        position: { x: 10, y: 10 },
+        instanceId: Date.now(),
+      },
+    ]);
+  };
+
   const createGridPattern = () => {
     const dots = [];
     const gridSize = 20;
-    const width = 800;
-    const height = 600;
-    
+    const gridContainer = gridRef.current;
+    if (!gridContainer) return dots;
+
+    const width = gridContainer.offsetWidth;
+    const height = gridContainer.offsetHeight;
+
     for (let x = 0; x < width; x += gridSize) {
       for (let y = 0; y < height; y += gridSize) {
         dots.push(
-          <div 
-            key={`${x}-${y}`} 
-            className="h-1 w-1 bg-gray-300 rounded-full absolute" 
+          <div
+            key={`${x}-${y}`}
+            className="h-1 w-1 bg-indigo-200 rounded-full absolute"
             style={{ left: x, top: y }}
           />
         );
@@ -86,55 +127,38 @@ const Playground = () => {
       case 'components':
         return (
           <>
-            <h2 className="text-lg font-bold mb-4">Components</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {availableComponents.map((component) => (
-                <div 
-                  key={component.id}
-                  className="cursor-grab border border-gray-200 rounded-md overflow-hidden hover:border-blue-400 transition-colors"
-                  onMouseDown={() => handleMouseDown(component.id)}
-                >
-                  <img 
-                    src={component.image} 
-                    alt={component.name} 
-                    className="w-full h-16 object-cover bg-gray-100" 
-                  />
-                  <div className="text-center py-1 text-sm">{component.name}</div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 text-sm text-gray-500">
-              <p>Drag components onto the grid.</p>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Components</h2>
+            {loadingWidgets ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : availableWidgets.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No components available
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {availableWidgets.map((widget) => (
+                  <div
+                    key={widget.id}
+                    onClick={() => handleAddComponent(widget)}
+                    className="cursor-pointer border border-gray-300 rounded-md overflow-hidden hover:border-blue-400 transition-colors"
+                  >
+                    <img
+                      src={widget.image || '/api/placeholder/100/80'}
+                      alt={widget.name}
+                      className="w-full h-16 object-cover bg-gray-100"
+                    />
+                    <div className="text-center font-bold py-1 text-sm text-gray-300">
+                      {widget.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-6 text-sm text-gray-800">
+              <p>Click components to add to the grid.</p>
               <p className="mt-2">Components will snap to the dotted grid.</p>
-            </div>
-          </>
-        );
-      case 'properties':
-        return (
-          <>
-            <h2 className="text-lg font-bold mb-4">Properties</h2>
-            <div className="p-2">
-              <p className="text-sm text-gray-500">Select a component to edit its properties.</p>
-            </div>
-          </>
-        );
-      case 'layers':
-        return (
-          <>
-            <h2 className="text-lg font-bold mb-4">Layers</h2>
-            <div className="p-2">
-              {components.length === 0 ? (
-                <p className="text-sm text-gray-500">No components added yet.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {components.map((comp) => (
-                    <li key={comp.instanceId} className="flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                      <span className="text-sm">{comp.name}</span>
-                      <span className="text-xs text-gray-500">ID: {comp.instanceId.toString().slice(-4)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
           </>
         );
@@ -143,108 +167,97 @@ const Playground = () => {
     }
   };
 
+  const sensors = useSensors(useSensor(PointerSensor));
+
   return (
     <div className="flex flex-col h-screen">
-      {/* Navbar */}
-      <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm z-10">
-        <div className="flex items-center">
-          <h1 className="text-xl font-bold">Design Playground</h1>
+      <div className="h-16 bg-gray-800 border-b border-gray-200 flex items-center justify-between px-4 shadow-sm z-10">
+        <div className="flex-shrink-0 flex items-center">
+          <Link
+            to="/"
+            className="h-10 w-10 rounded bg-emerald-500 flex items-center justify-center text-white font-bold"
+          >
+            BJIT
+          </Link>
+          <span className="ml-2 text-lg font-semibold text-slate-800 dark:text-white transition-colors duration-200">
+            Cloud.Playground
+          </span>
         </div>
         <div className="flex space-x-4">
-          <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Preview</button>
-          <button className="px-3 py-1 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">Export</button>
-          <button className="px-3 py-1 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200">Settings</button>
+          <button className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700">
+            Preview
+          </button>
+          <button className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200">
+            Export
+          </button>
+          <button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
+            Settings
+          </button>
+          <button
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            onClick={fetchAvailableWidgets}
+          >
+            Refresh Components
+          </button>
         </div>
       </div>
-      
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
+
+      <div className="flex flex-1 overflow-hidden p-4">
         <div className="w-16 bg-gray-800 flex flex-col items-center py-4">
-          <button 
-            className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'components' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
+          <button
+            className={`p-3 rounded-md mb-2 ${
+              activeSidebarTab === 'components'
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
             onClick={() => setActiveSidebarTab('components')}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </button>
-          <button 
-            className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'properties' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-            onClick={() => setActiveSidebarTab('properties')}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-          <button 
-            className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'layers' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'}`}
-            onClick={() => setActiveSidebarTab('layers')}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
             </svg>
           </button>
         </div>
         
-        {/* Main grid area */}
-        <div 
-          className="flex-1 relative bg-gray-100 overflow-auto p-8 flex justify-center items-center"
-        >
-          <div 
-            className="relative bg-white shadow-lg rounded-lg w-full max-w-4xl h-full max-h-full overflow-hidden"
-            ref={gridRef}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
+        <div className="flex-1 relative bg-gray-900 p-4" ref={gridRef}>
+          {/* Implement the Dotted grid area */}
+          <DndContext
+            sensors={sensors}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToWindowEdges]}
           >
-            {/* Dotted grid */}
-            {createGridPattern()}
-            
-            {/* Placed components */}
-            {components.map((comp) => (
-              <div 
-                key={comp.instanceId}
-                className="absolute bg-white shadow-md p-2 rounded-md"
-                style={{ 
-                  left: comp.position.x, 
-                  top: comp.position.y,
-                  width: '120px'
-                }}
-              >
-                <img src={comp.image} alt={comp.name} className="w-full h-20 object-cover bg-gray-200" />
-                <div className="text-center mt-1 text-sm font-medium">{comp.name}</div>
+            <SortableContext items={components.map((c) => c.instanceId.toString())}>
+              <div className="relative h-full w-full">
+                {createGridPattern()}
+                {components.map((component) => (
+                  <DraggableComponent
+                    key={component.instanceId}
+                    component={component}
+                  />
+                ))}
               </div>
-            ))}
-            
-            {/* Component being dragged */}
-            {isDragging && selectedComponent && (
-              <div 
-                className="absolute bg-white shadow-md p-2 rounded-md opacity-70 pointer-events-none"
-                style={{ 
-                  left: dragPosition.x, 
-                  top: dragPosition.y,
-                  width: '120px'
-                }}
-              >
-                <img 
-                  src={availableComponents.find(c => c.id === selectedComponent)?.image} 
-                  alt="Component" 
-                  className="w-full h-20 object-cover bg-gray-200" 
-                />
-                <div className="text-center mt-1 text-sm font-medium">
-                  {availableComponents.find(c => c.id === selectedComponent)?.name}
-                </div>
-              </div>
-            )}
-          </div>
+            </SortableContext>
+          </DndContext>
         </div>
-        
-        {/* Right panel */}
-        <div className="w-64 bg-white border-l border-gray-200 p-4 overflow-y-auto">
+
+        <div className="w-64 bg-gray-800 p-4 overflow-y-auto">
           {renderSidebarContent()}
         </div>
       </div>
+
+      <footer className="bg-gray-800 text-white text-center py-2">
+        <p>&copy; 2023 Cloud.Playground by BJIT</p>
+      </footer>
     </div>
   );
 };

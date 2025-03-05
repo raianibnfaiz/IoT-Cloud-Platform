@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import WidgetDropdown from './WidgetDropdown'; // Import the WidgetDropdown component
+import WidgetDropdown from './WidgetDropDown';
 
 const Sidebar = ({ isOpen, closeSidebar }) => {
     return (
@@ -11,7 +11,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
             <h2 className="text-white text-2xl font-bold mb-4">Widget List</h2>
             <ul className="space-y-2">
                 <li>
-                    <WidgetDropdown /> {/* Add WidgetDropdown here */}
+                    <WidgetDropdown />
                 </li>
                
                 {/* Add more sidebar items as needed */}
