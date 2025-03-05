@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import TemplatesList from './TemplatesList'; // Adjust the import path as necessary
 
@@ -6,7 +6,7 @@ const DeveloperZone = () => {
     const [templateName, setTemplateName] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const [templates, setTemplates] = useState([]); // State for templates
+    const [templates, setTemplates] = useState([]); 
 
     const token = sessionStorage.getItem('authToken');
 
@@ -14,8 +14,39 @@ const DeveloperZone = () => {
         setTemplateName(e.target.value);
     };
 
+    const fetchTemplates = useCallback(async () => {
+        if (!token) {
+            setMessage('❌ Authentication token is missing');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await axios.get('https://cloud-platform-server-for-bjit.onrender.com/users/templates', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            // Ensure response data is an array
+            const templatesData = Array.isArray(response.data) ? response.data : [];
+            setTemplates(templatesData);
+        } catch (error) {
+            console.error('Error fetching templates:', error);
+            setMessage(`❌ Failed to fetch templates: ${error.response?.data?.message || error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!token) {
+            setMessage('❌ Authentication token is missing');
+            return;
+        }
+
         setLoading(true);
         setMessage('');
 
@@ -27,7 +58,7 @@ const DeveloperZone = () => {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    template_name: templateName,
+                    template_name: templateName.trim(), // Trim whitespace
                     widget_list: [],
                 }),
             });
@@ -38,51 +69,52 @@ const DeveloperZone = () => {
             }
 
             const data = await response.json();
-            setTemplates([...templates, data.template]); // Add the new template to the state
-            setMessage(`✅ Template created successfully: ${data.template.template_name}`);
+            
+            // Validate the new template before adding
+            if (data.template && data.template.template_name) {
+                setTemplates(prevTemplates => [...prevTemplates, data.template]);
+                setMessage(`✅ Template created successfully: ${data.template.template_name}`);
+                handleCloseModal();
+            } else {
+                throw new Error('Invalid template response');
+            }
         } catch (err) {
             console.error(err);
             setMessage(`❌ Error: ${err.message}`);
         } finally {
             setLoading(false);
-            handleCloseModal();
             
-            // Display message for 3 seconds
-            setTimeout(() => {
+            // Clear message after 3 seconds
+            const messageTimeout = setTimeout(() => {
                 setMessage('');
             }, 3000);
-            
-            fetchTemplates(); // Refresh the template list
+
+            // Refresh templates
+            fetchTemplates();
+
+            // Cleanup timeout
+            return () => clearTimeout(messageTimeout);
         }
     };
 
     const handleCloseModal = () => {
         const modal = document.getElementById('templateModal');
-        modal.close(); // Close the modal
-        setTemplateName(''); // Clear input field
+        if (modal) {
+            modal.close(); // Close the modal
+            setTemplateName(''); // Clear input field
+        }
     };
 
     const handleOpenModal = () => {
         const modal = document.getElementById('templateModal');
-        modal.showModal(); // Open the modal
-    };
-
-    const fetchTemplates = async () => {
-        try {
-            const response = await axios.get('https://cloud-platform-server-for-bjit.onrender.com/users/templates', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            setTemplates(response.data); // Adjust according to your response structure
-        } catch (error) {
-            console.error('Error fetching templates:', error);
+        if (modal) {
+            modal.showModal(); // Open the modal
         }
     };
 
     useEffect(() => {
         fetchTemplates(); // Fetch templates when the component mounts
-    }, []);
+    }, [fetchTemplates]);
 
     return (
         <div className="p-4">
@@ -110,11 +142,12 @@ const DeveloperZone = () => {
                             onChange={handleTemplateNameChange}
                             className="input w-full mb-4 p-2 border-b-2 border-gray-300 rounded-lg"
                             required
+                            maxLength={50} // Prevent overly long template names
                         />
                         <button
                             type="submit"
                             className="btn btn-success w-full p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700"
-                            disabled={loading}
+                            disabled={loading || !templateName.trim()}
                         >
                             {loading ? 'Creating...' : 'Add'}
                         </button>
@@ -131,7 +164,10 @@ const DeveloperZone = () => {
             </dialog>
 
             {/* Render the Templates List */}
-            <TemplatesList templates={templates} />
+            <TemplatesList 
+                templates={templates} 
+                loading={loading}
+            />
         </div>
     );
 };

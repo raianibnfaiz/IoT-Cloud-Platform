@@ -4,8 +4,10 @@ import { DndContext, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
+import Interactive3DWidget from '../../pages/DeveloperZone/Interactive3DWidget';
 
-const DraggableComponent = ({ component }) => {
+
+const DraggableComponent = ({ component, onValueChanged, onDelete }) => {
   const { setNodeRef, transform, listeners, isDragging } = useSortable({
     id: component.instanceId.toString(),
   });
@@ -20,15 +22,26 @@ const DraggableComponent = ({ component }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners}>
-      <img
-        src={component.image || '/api/placeholder/100/80'}
-        alt={component.name}
-        className="w-16 h-16 object-cover"
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      {...listeners}
+      className="group relative"
+    >
+      <Interactive3DWidget 
+        widget={component} 
+        isPreviewMode={true}
+        onValueChanged={(value) => onValueChanged(component.instanceId, value)}
       />
-      <div className="text-center font-semibold text-xs text-white">
+      <div className="text-center font-semibold text-xs text-white mt-2">
         {component.name}
       </div>
+      <button 
+        onClick={() => onDelete(component.instanceId)}
+        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        ×
+      </button>
     </div>
   );
 };
@@ -38,6 +51,7 @@ const Playground = () => {
   const [activeSidebarTab, setActiveSidebarTab] = useState('components');
   const [availableWidgets, setAvailableWidgets] = useState([]);
   const [loadingWidgets, setLoadingWidgets] = useState(false);
+  const [widgetStates, setWidgetStates] = useState({});
   const gridRef = useRef(null);
 
   const token = sessionStorage.getItem('authToken');
@@ -66,6 +80,7 @@ const Playground = () => {
       setAvailableWidgets(data);
     } catch (error) {
       console.error("Failed to fetch available widgets:", error);
+      // Optional: Add toast or error notification
     } finally {
       setLoadingWidgets(false);
     }
@@ -89,14 +104,62 @@ const Playground = () => {
   };
 
   const handleAddComponent = (widget) => {
-    setComponents([
-      ...components,
-      {
-        ...widget,
-        position: { x: 10, y: 10 },
-        instanceId: Date.now(),
+    const newComponent = {
+      ...widget,
+      position: { 
+        x: Math.random() * (gridRef.current.offsetWidth - 100), 
+        y: Math.random() * (gridRef.current.offsetHeight - 100) 
       },
-    ]);
+      instanceId: Date.now(),
+    };
+    
+    setComponents([...components, newComponent]);
+    
+    // Initialize state for the new widget
+    setWidgetStates(prev => ({
+      ...prev,
+      [newComponent.instanceId]: widget.state?.default ?? 
+        (widget.type === '3d_switch' ? false : 50)
+    }));
+  };
+
+  const handleDeleteComponent = (instanceId) => {
+    setComponents(components.filter(c => c.instanceId !== instanceId));
+    
+    // Remove the widget state
+    setWidgetStates(prev => {
+      const newStates = {...prev};
+      delete newStates[instanceId];
+      return newStates;
+    });
+  };
+
+  const handleValueChanged = (instanceId, newValue) => {
+    // Update the state for the specific widget
+    setWidgetStates(prev => ({
+      ...prev,
+      [instanceId]: newValue
+    }));
+  };
+
+  const handleExportPlayground = () => {
+    const exportData = {
+      components: components.map(component => ({
+        id: component.id,
+        type: component.type,
+        name: component.name,
+        position: component.position,
+        state: widgetStates[component.instanceId]
+      })),
+      timestamp: new Date().toISOString()
+    };
+
+    // Create a downloadable JSON file
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `playground_export_${new Date().toISOString().replace(/:/g, '-')}.json`;
+    link.click();
   };
 
   const createGridPattern = () => {
@@ -113,7 +176,7 @@ const Playground = () => {
         dots.push(
           <div
             key={`${x}-${y}`}
-            className="h-1 w-1 bg-indigo-200 rounded-full absolute"
+            className="h-1 w-1 bg-indigo-200 rounded-full absolute opacity-30"
             style={{ left: x, top: y }}
           />
         );
@@ -144,11 +207,12 @@ const Playground = () => {
                     onClick={() => handleAddComponent(widget)}
                     className="cursor-pointer border border-gray-300 rounded-md overflow-hidden hover:border-blue-400 transition-colors"
                   >
-                    <img
-                      src={widget.image || '/api/placeholder/100/80'}
-                      alt={widget.name}
-                      className="w-full h-16 object-cover bg-gray-100"
-                    />
+                    <div className="w-full h-16 flex items-center justify-center bg-gray-100">
+                      <Interactive3DWidget 
+                        widget={widget} 
+                        isPreviewMode={true}
+                      />
+                    </div>
                     <div className="text-center font-bold py-1 text-sm text-gray-300">
                       {widget.name}
                     </div>
@@ -162,6 +226,24 @@ const Playground = () => {
             </div>
           </>
         );
+      case 'states':
+        return (
+          <div>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Widget States</h2>
+            {Object.entries(widgetStates).map(([instanceId, value]) => {
+              const component = components.find(c => c.instanceId.toString() === instanceId);
+              return (
+                <div 
+                  key={instanceId} 
+                  className="bg-gray-700 rounded-md p-3 mb-2 flex justify-between items-center"
+                >
+                  <span className="text-white">{component?.name}</span>
+                  <span className="text-blue-300">{JSON.stringify(value)}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
       default:
         return null;
     }
@@ -171,6 +253,7 @@ const Playground = () => {
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Header remains the same */}
       <div className="h-16 bg-gray-800 border-b border-gray-200 flex items-center justify-between px-4 shadow-sm z-10">
         <div className="flex-shrink-0 flex items-center">
           <Link
@@ -187,7 +270,10 @@ const Playground = () => {
           <button className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700">
             Preview
           </button>
-          <button className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200">
+          <button 
+            onClick={handleExportPlayground}
+            className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200"
+          >
             Export
           </button>
           <button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
@@ -203,6 +289,7 @@ const Playground = () => {
       </div>
 
       <div className="flex flex-1 overflow-hidden p-4">
+        {/* Sidebar navigation remains the same */}
         <div className="w-16 bg-gray-800 flex flex-col items-center py-4">
           <button
             className={`p-3 rounded-md mb-2 ${
@@ -227,10 +314,32 @@ const Playground = () => {
               />
             </svg>
           </button>
+          <button
+            className={`p-3 rounded-md mb-2 ${
+              activeSidebarTab === 'states'
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
+            onClick={() => setActiveSidebarTab('states')}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+              />
+            </svg>
+          </button>
         </div>
         
         <div className="flex-1 relative bg-gray-900 p-4" ref={gridRef}>
-          {/* Implement the Dotted grid area */}
           <DndContext
             sensors={sensors}
             onDragEnd={handleDragEnd}
@@ -243,6 +352,8 @@ const Playground = () => {
                   <DraggableComponent
                     key={component.instanceId}
                     component={component}
+                    onValueChanged={handleValueChanged}
+                    onDelete={handleDeleteComponent}
                   />
                 ))}
               </div>
@@ -256,7 +367,7 @@ const Playground = () => {
       </div>
 
       <footer className="bg-gray-800 text-white text-center py-2">
-        <p>&copy; 2023 Cloud.Playground by BJIT</p>
+        <p>&copy; 2024 Cloud.Playground by BJIT</p>
       </footer>
     </div>
   );
