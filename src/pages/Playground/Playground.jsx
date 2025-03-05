@@ -6,7 +6,6 @@ import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
 import Interactive3DWidget from '../../pages/DeveloperZone/Interactive3DWidget';
 
-
 const DraggableComponent = ({ component, onValueChanged, onDelete }) => {
   const { setNodeRef, transform, listeners, isDragging } = useSortable({
     id: component.instanceId.toString(),
