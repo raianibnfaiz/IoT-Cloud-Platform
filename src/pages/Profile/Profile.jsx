@@ -7,6 +7,7 @@ import { BiDotsVerticalRounded } from "react-icons/bi";
 import { FiLogOut } from "react-icons/fi";
 import AuthContext from "../../context/AuthContext/AuthContext";
 
+
 const Profile = () => {
   const { signOutUser } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,8 +18,8 @@ const Profile = () => {
   const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
   const user_id = sessionStorage.getItem("user_id") || "N/A";
   const photoURL = sessionStorage.getItem("userPhoto");
-  const role = "Admin"; // In your app, you might want to get this from session storage
-  
+  const role = "Developer"; // In your app, you might want to get this from session storage
+  console.log(username, userEmail, user_id, photoURL);
   // Format user initials from username
   const getUserInitials = () => {
     if (!username || username === "Guest") return "G";
@@ -31,7 +32,7 @@ const Profile = () => {
       .then(() => {
         console.log("Successful sign out");
         sessionStorage.clear();
-        navigate("/");
+    
       })
       .catch((error) => {
         console.log("Failed to sign out:", error);
@@ -104,8 +105,8 @@ const Profile = () => {
               </div>
               
               <div>
-                <h3 className="text-slate-400 mb-1">LAST LOGIN</h3>
-                <p>1:10 AM Today</p>
+                <h3 className="text-slate-400 mb-1">User ID</h3>
+                <p>{user_id}</p>
               </div>
               
               <div>
@@ -142,8 +143,8 @@ const Profile = () => {
               </div>
               <p className="text-slate-400 text-sm">
                 You have access to Developer features. To learn more visit{" "}
-                <a href="https://blynk.io/en/developers" className="text-blue-400 hover:underline">
-                  blynk.io/en/developers
+                <a href="https://rif-iot-cloud-platform.web.app/" className="text-blue-400 hover:underline">
+                  BJIT IoT Cloud Platform 
                 </a>
               </p>
             </div>

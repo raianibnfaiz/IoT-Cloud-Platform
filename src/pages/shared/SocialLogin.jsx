@@ -12,7 +12,7 @@ const SocialLogin = () => {
     const handleGoogleSignIn = async () => {
         try {
             await singInWithGoogle();
-            window.location.href = '/dashboard';
+            navigate(from);
         } catch (error) {
             console.error("Error during Google sign-in:", error.message);
         }
