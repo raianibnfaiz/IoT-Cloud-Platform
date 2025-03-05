@@ -95,6 +95,7 @@ const Navbar = () => {
               >
                 Sign Out
               </button>
+              
             </>
           ) : (
             <>
