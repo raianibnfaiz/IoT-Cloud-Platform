@@ -5,43 +5,87 @@ import { motion } from 'framer-motion';
 import img1 from '../../assets/image/iot-banner.jpg'
 import img2 from '../../assets/image/iot-banner2.png'
 
-const features = [
-  {
-      title: "Blueprints and Templates",
-      description: "Templates that include a tutorial, a firmware code example, dashboard UI, and everything else you need for a working device",
-  },
-  {
-      title: "Mobile Apps",
-      description: "Our mobile application, suitable for both Android and iOS, allows users to customize their interface via an intuitive drag-and-drop process.",
-  },
-  {
-      title: "Device Provisioning",
-      description: "Device provisioning in IoT is a complex blend of hardware, firmware, software, connectivity and security.",
-  },
-];
-const Features = () =>{
+const Features = () => {
+  const features = [
+    {
+      title: "3D Widget Library",
+      description: "Access a comprehensive library of pre-built 3D IoT widgets for quick implementation.",
+      icon: "📚"
+    },
+    {
+      title: "Real-time Updates",
+      description: "Monitor device states and receive instant updates with WebSocket integration.",
+      icon: "🔄"
+    },
+    {
+      title: "Customizable Widgets",
+      description: "Easily customize widget appearance, behavior, and animations to match your needs.",
+      icon: "🎨"
+    },
+    {
+      title: "Drag & Drop Interface",
+      description: "Intuitive drag and drop functionality for effortless device placement and organization.",
+      icon: "🎯"
+    },
+    {
+      title: "State Management",
+      description: "Robust state management system for tracking and controlling device states.",
+      icon: "⚡"
+    },
+    {
+      title: "Export & Import",
+      description: "Save and load your playground configurations for easy sharing and backup.",
+      icon: "💾"
+    }
+  ];
+
   return (
-
-    <div className="bg-gradient-to-r from-gray-800 to-black-100 py-20 m-10 p-10">
-            <h2 className="text-4xl font-bold text-center text-white mb-10 font-serif">Our Key Features</h2>
-            <div className="flex flex-col lg:flex-row justify-center items-center py-2">
-                {features.map((feature, index) => (
-                    <motion.div
-                        key={index}
-                        className="flex-1 p-6 m-4 rounded-lg shadow-lg bg-gradient-to-r from-gray-800 to-gray-600" // Darker gradient for feature boxes
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.2 }}
-                    >
-                        <h3 className="text-2xl font-semibold text-yellow-600 text-center py-3">{feature.title}</h3>
-                        <p className="text-gray-300 text-center font-roboto ">{feature.description}</p>
-                    </motion.div>
-                ))}
-            </div>
+    <div className="py-12 md:py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+            Powerful Features
+          </h2>
+          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            Discover the tools and capabilities that make Cloud.Playground the perfect solution for IoT device management.
+          </p>
         </div>
-  )
-}
-  
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="bg-gray-800 rounded-xl p-6 hover:bg-gray-700 
+                       transition-colors duration-300 transform hover:scale-105
+                       border border-gray-700"
+            >
+              <div className="flex items-center mb-4">
+                <span className="text-4xl mr-4">{feature.icon}</span>
+                <h3 className="text-xl font-semibold text-white">
+                  {feature.title}
+                </h3>
+              </div>
+              <p className="text-gray-300">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
 
-export default Features 
+        {/* Call to action */}
+        <div className="mt-16 text-center">
+          <a
+            href="/playground"
+            className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg 
+                     text-lg font-semibold hover:bg-blue-700 transition-colors 
+                     duration-300 transform hover:scale-105"
+          >
+            Try It Now
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Features; 

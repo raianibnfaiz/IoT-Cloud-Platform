@@ -5,11 +5,11 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import Home from './pages/home/Home'; // Make sure this path is correct
+import Home from './pages/home/Home';
 import About from "./pages/About/About";
 import Root from "./root/Root";
-import { Register } from "./pages/Register/Register";
-import { Login } from "./pages/Login/Login";
+import { Register } from "./pages/Auth/Register/Register";
+import { Login } from "./pages/Auth/Login/Login";
 import AuthProvider from "./context/AuthContext/AuthProvider";
 import Features from "./pages/Features/Features";
 import PrivateRoute from "./privateRoute/PrivateRoute";
@@ -19,9 +19,15 @@ import EditBillingInformation from "./pages/Billing/EditBillingInformation";
 import Settings from "./pages/Settings/Settings";
 import DeveloperZone from "./pages/DeveloperZone/DeveloperZone";
 import Billing from "./pages/Billing/Billing";
-import TemplateDetail from "./pages/DeveloperZone/TemplateDetail";
+import TemplateDetail from "./pages/Template/TemplateDetail";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Playground from "./pages/Playground/Playground";
+import Pricing from "./pages/Pricing/Pricing";
+import Enterprise from "./pages/Enterprise/Enterprise";
+import Developers from "./pages/Developers/Developers";
+import CaseStudies from "./pages/CaseStudies/CaseStudies";
+import Company from "./pages/Company/Company";
+import ComingSoon from "./pages/NotFound/ComingSoon";
 
 const router = createBrowserRouter([
   {
@@ -96,12 +102,36 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: <PrivateRoute>
             <Dashboard></Dashboard>
-            </PrivateRoute>
+        </PrivateRoute>
       },
       {
-        path: "template/:templateId", // Add a route for template details
-        element: <TemplateDetail />, // Render TemplateDetail component
+        path: "template/:templateId",
+        element: <TemplateDetail />,
       },
+      {
+        path: "pricing",
+        element: <Pricing />,
+      },
+      {
+        path: "enterprise",
+        element: <Enterprise />,
+      },
+      {
+        path: "developers",
+        element: <Developers />,
+      },
+      {
+        path: "case-studies",
+        element: <CaseStudies />,
+      },
+      {
+        path: "company",
+        element: <Company />,
+      },
+      {
+        path: "*",
+        element: <ComingSoon />,
+      }
     ],
   },
 ]);

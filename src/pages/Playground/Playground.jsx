@@ -1,38 +1,125 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { DndContext, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
-import { SortableContext, useSortable } from '@dnd-kit/sortable';
-import { restrictToWindowEdges } from '@dnd-kit/modifiers';
-import { CSS } from '@dnd-kit/utilities';
+import PropTypes from 'prop-types';
+import { motion, AnimatePresence } from 'framer-motion';
+import Widget3D from '../Widget/Widget3D';
+import WidgetConfigModal from '../Widget/WidgetConfigModal';
 
-const DEFAULT_IMAGE = '/path/to/default/image.png'; // Replace with your actual placeholder image path
+// Helper function to parse widget configuration from image property
+const parseWidgetConfig = (imageProperty) => {
+  if (!imageProperty) return null;
 
-const DraggableComponent = ({ component }) => {
-  const { setNodeRef, transform, listeners, isDragging } = useSortable({
-    id: component.instanceId.toString(),
-  });
+  // If imageProperty is already an object, return it
+  if (typeof imageProperty === 'object') return imageProperty;
+
+  // Try to parse the JSON string
+  try {
+    return JSON.parse(imageProperty);
+  } catch (error) {
+    console.error('Error parsing widget configuration:', error);
+    // Return a default configuration object
+    return {
+      type: 'unknown',
+      state: {
+        default: false,
+        default_value: 50,
+        default_text: '',
+        default_color: '#2196F3'
+      },
+      appearance: {
+        color: '#2196F3',
+        size: 'medium'
+      }
+    };
+  }
+};
+
+const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick, onDrag }) => {
+  const [position, setPosition] = useState({ x: component.position.x, y: component.position.y });
+  const [isDragging, setIsDragging] = useState(false);
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    zIndex: isDragging ? 999 : undefined,
-    cursor: 'grab',
+    zIndex: isDragging ? 999 : 1,
     position: 'absolute',
-    left: component.position.x,
-    top: component.position.y,
+  };
+
+  // Framer Motion variants for smooth animations
+  const variants = {
+    initial: { scale: 0.8, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    exit: { scale: 0.8, opacity: 0 },
+    hover: { scale: 1.02 },
+    drag: { scale: 1.1, cursor: 'grabbing' }
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners}>
-      <img
-        src={component.image || DEFAULT_IMAGE}
-        alt={component.name}
-        className="w-16 h-16 object-cover"
+    <motion.div
+      style={style}
+      className="group relative"
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      whileHover="hover"
+      whileDrag="drag"
+      variants={variants}
+      drag
+      dragMomentum={false}
+      dragElastic={0}
+      dragTransition={{
+        power: 0,
+        timeConstant: 0,
+        modifyTarget: target => target
+      }}
+      onDragStart={() => setIsDragging(true)}
+      onDrag={(event, info) => {
+        const newPosition = {
+          x: position.x + info.delta.x,
+          y: position.y + info.delta.y
+        };
+        setPosition(newPosition);
+        onDrag(component, newPosition);
+      }}
+      onDragEnd={() => {
+        setIsDragging(false);
+      }}
+      dragConstraints={{ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }}
+      x={position.x}
+      y={position.y}
+    >
+      <Widget3D
+        widget={component}
+        isPreviewMode={false}
+        onValueChanged={(value) => onValueChanged(component.instanceId, value)}
+        onConfigClick={onConfigClick}
       />
-      <div className="text-center font-semibold text-xs text-white">
-        {component.name}
-      </div>
-    </div>
+      <motion.button
+        onClick={() => onDelete(component.instanceId)}
+        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100"
+        whileHover={{ scale: 1.2 }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      >
+        ×
+      </motion.button>
+    </motion.div>
   );
+};
+
+// Update PropTypes
+DraggableComponent.propTypes = {
+  component: PropTypes.shape({
+    instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    position: PropTypes.shape({
+      x: PropTypes.number.isRequired,
+      y: PropTypes.number.isRequired
+    }).isRequired,
+    name: PropTypes.string,
+    image: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+  }).isRequired,
+  onValueChanged: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onConfigClick: PropTypes.func.isRequired,
+  onDrag: PropTypes.func.isRequired
 };
 
 const Playground = () => {
@@ -40,94 +127,525 @@ const Playground = () => {
   const [activeSidebarTab, setActiveSidebarTab] = useState('components');
   const [availableWidgets, setAvailableWidgets] = useState([]);
   const [loadingWidgets, setLoadingWidgets] = useState(false);
+  const [widgetStates, setWidgetStates] = useState({});
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [selectedWidget, setSelectedWidget] = useState(null);
+  const [gridPattern, setGridPattern] = useState([]);
   const gridRef = useRef(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [lastComponentPosition, setLastComponentPosition] = useState(null);
 
   const token = sessionStorage.getItem('authToken');
 
   useEffect(() => {
     fetchAvailableWidgets();
-  }, []);
+    
+    // Add window resize listener to update grid
+    const handleResize = () => {
+      if (gridRef.current) {
+        setGridPattern(createGridPattern());
+      }
+    };
+    
+    const handleMouseMove = (e) => {
+      if (gridRef.current) {
+        const rect = gridRef.current.getBoundingClientRect();
+        setMousePosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+        setGridPattern(createGridPattern());
+      }
+    };
+    
+    const gridElement = gridRef.current;
+    if (gridElement) {
+      gridElement.addEventListener('mousemove', handleMouseMove);
+    }
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up event listener
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (gridElement) {
+        gridElement.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
+  }, [gridRef.current]);
+
+  // Update grid pattern when components change
+  useEffect(() => {
+    if (gridRef.current) {
+      setGridPattern(createGridPattern());
+    }
+  }, [components]);
+
+  // Update grid pattern when the grid container is first rendered
+  useEffect(() => {
+    if (gridRef.current) {
+      setGridPattern(createGridPattern());
+    }
+  }, [gridRef.current]);
 
   const fetchAvailableWidgets = async () => {
     setLoadingWidgets(true);
     try {
-      const response = await fetch(
-        "https://cloud-platform-server-for-bjit.onrender.com/widgets",
-        {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch("https://cloud-platform-server-for-bjit.onrender.com/widgets", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error('Failed to fetch widgets');
       }
+
       const data = await response.json();
-      setAvailableWidgets(data);
+
+      // Process the widget data to ensure image property is properly structured
+      const processedWidgets = data.map(widget => {
+        // Ensure the image property is parsed if it's a string
+        if (widget.image && typeof widget.image === 'string') {
+          try {
+            widget.image = JSON.parse(widget.image);
+          } catch (error) {
+            // If parsing fails, keep the original string
+            console.error(`Error parsing widget image for ${widget.name}:`, error);
+          }
+        }
+
+        return widget;
+      });
+
+      setAvailableWidgets(processedWidgets);
     } catch (error) {
-      console.error("Failed to fetch available widgets:", error);
+      console.error('Error fetching widgets:', error);
     } finally {
       setLoadingWidgets(false);
     }
   };
 
-  const handleDragEnd = (event) => {
-    const { active, delta } = event;
-    setComponents((components) =>
-      components.map((component) =>
-        component.instanceId.toString() === active.id
-          ? {
-              ...component,
-              position: {
-                x: component.position.x + delta.x,
-                y: component.position.y + delta.y,
-              },
-            }
-          : component
-      )
-    );
+  const handleComponentDrag = (component, newPosition) => {
+    setLastComponentPosition(newPosition);
+    setComponents(components.map(c => {
+      if (c.instanceId === component.instanceId) {
+        return {
+          ...c,
+          position: newPosition
+        };
+      }
+      return c;
+    }));
   };
 
   const handleAddComponent = (widget) => {
-    setComponents([
-      ...components,
-      {
-        ...widget,
-        position: { x: 10, y: 10 },
-        instanceId: Date.now(),
+    const widgetConfig = parseWidgetConfig(widget.image);
+    const normalizedType = getNormalizedType(widgetConfig);
+
+    // Generate a unique instance ID
+    const instanceId = Date.now();
+
+    // Set initial position in the center of the grid
+    const gridContainer = gridRef.current;
+    const centerX = gridContainer ? gridContainer.clientWidth / 2 : 300;
+    const centerY = gridContainer ? gridContainer.clientHeight / 2 : 300;
+
+    // Store this position for grid highlighting
+    setLastComponentPosition({
+      x: centerX,
+      y: centerY
+    });
+
+    // Create new component with default values based on widget type
+    const newComponent = {
+      instanceId,
+      widgetId: widget.id,
+      name: widget.name,
+      type: widget.type,
+      image: widget.image,
+      position: {
+        x: centerX,
+        y: centerY,
       },
-    ]);
+      value: getDefaultValueForType(normalizedType),
+    };
+
+    setComponents([...components, newComponent]);
+
+    // Update widget states
+    setWidgetStates((prevStates) => ({
+      ...prevStates,
+      [instanceId]: {
+        id: instanceId,
+        name: widget.name,
+        type: normalizedType,
+        value: getDefaultValueForType(normalizedType),
+      },
+    }));
+
+    // Update grid pattern to show highlight around new component
+    setGridPattern(createGridPattern());
+  };
+
+  const handleDeleteComponent = (instanceId) => {
+    setComponents(components.filter((c) => c.instanceId !== instanceId));
+
+    // Remove from widget states
+    setWidgetStates((prevStates) => {
+      const newStates = { ...prevStates };
+      delete newStates[instanceId];
+      return newStates;
+    });
+
+    // Update grid pattern after component is removed
+    setTimeout(() => setGridPattern(createGridPattern()), 50);
+  };
+
+  const handleValueChanged = (instanceId, newValue) => {
+    // Update the state for the specific widget
+    setWidgetStates(prev => ({
+      ...prev,
+      [instanceId]: newValue
+    }));
+
+    // Find the component to get its type
+    const component = components.find(c => c.instanceId === instanceId);
+    if (!component) return;
+
+    const config = parseWidgetConfig(component);
+    if (!config) return;
+
+    // Log the state change for debugging
+    console.log(`Widget ${component.name} (${config.type}) state changed:`, newValue);
+
+    // Here you would typically send the state change to a server
+    // For example:
+    // sendStateToServer(instanceId, config.type, newValue);
+  };
+
+  const handleConfigClick = (widget) => {
+    setSelectedWidget(widget);
+    setConfigModalOpen(true);
+  };
+
+  const handleSaveConfig = (instanceId, newConfig) => {
+    // Update the component with the new configuration
+    setComponents(components.map(component => {
+      if (component.instanceId === instanceId) {
+        // Create a new image property with the updated configuration
+        let updatedImage;
+
+        try {
+          // If the image is already an object, update it
+          if (typeof component.image === 'object') {
+            updatedImage = {
+              ...component.image,
+              name: newConfig.name,
+              appearance: newConfig.appearance,
+              state: newConfig.state,
+              animation: newConfig.animation
+            };
+          }
+          // If the image is a string, parse it first
+          else if (typeof component.image === 'string') {
+            const parsedImage = JSON.parse(component.image);
+            updatedImage = {
+              ...parsedImage,
+              name: newConfig.name,
+              appearance: newConfig.appearance,
+              state: newConfig.state,
+              animation: newConfig.animation
+            };
+          }
+        } catch (error) {
+          console.error('Failed to update widget configuration:', error);
+          updatedImage = component.image;
+        }
+
+        return {
+          ...component,
+          name: newConfig.name,
+          image: updatedImage
+        };
+      }
+      return component;
+    }));
+
+    // Close the modal
+    setConfigModalOpen(false);
+    setSelectedWidget(null);
+  };
+
+  const handleExportPlayground = () => {
+    const exportData = {
+      components: components.map(component => {
+        const config = parseWidgetConfig(component);
+        return {
+          id: component._id || component.id,
+          name: component.name,
+          type: config?.type || component.type,
+          position: component.position,
+          state: widgetStates[component.instanceId],
+          configuration: config
+        };
+      }),
+      timestamp: new Date().toISOString()
+    };
+
+    // Create a downloadable JSON file
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `playground_export_${new Date().toISOString().replace(/:/g, '-')}.json`;
+    link.click();
   };
 
   const createGridPattern = () => {
-    const dots = [];
-    const gridSize = 20; // Adjust this value to control the dot spacing
+    if (!gridRef.current) return [];
+
     const gridContainer = gridRef.current;
-    if (!gridContainer) return dots;
+    const width = gridContainer.clientWidth;
+    const height = gridContainer.clientHeight;
 
-    const width = gridContainer.offsetWidth;
-    const height = gridContainer.offsetHeight;
+    // Make grid size responsive to container size
+    const baseGridSize = 20;
+    const gridSize = Math.max(baseGridSize, Math.min(width, height) / 50);
 
-    for (let x = 0; x < width; x += gridSize) {
-      for (let y = 0; y < height; y += gridSize) {
+    const cols = Math.floor(width / gridSize);
+    const rows = Math.floor(height / gridSize);
+
+    const dots = [];
+
+    for (let row = 0; row <= rows; row++) {
+      for (let col = 0; col <= cols; col++) {
+        const x = col * gridSize;
+        const y = row * gridSize;
+
+        // Calculate distance from mouse or last component position
+        let distance = Infinity;
+        let maxDistance = 150; // Maximum distance for effect
+
+        if (mousePosition.x && mousePosition.y) {
+          const dx = mousePosition.x - x;
+          const dy = mousePosition.y - y;
+          distance = Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Also consider distance from last placed component
+        if (lastComponentPosition) {
+          const dx = lastComponentPosition.x - x;
+          const dy = lastComponentPosition.y - y;
+          const componentDistance = Math.sqrt(dx * dx + dy * dy);
+          distance = Math.min(distance, componentDistance);
+        }
+
+        // Calculate dot size and opacity based on distance
+        const baseSize = 3;
+        const maxSize = 6;
+        const baseOpacity = 0.2;
+        const maxOpacity = 0.6;
+
+        let size = baseSize;
+        let opacity = baseOpacity;
+
+        if (distance < maxDistance) {
+          // Scale size and opacity based on distance
+          const factor = 1 - (distance / maxDistance);
+          size = baseSize + (maxSize - baseSize) * factor;
+          opacity = baseOpacity + (maxOpacity - baseOpacity) * factor;
+        }
+
         dots.push(
           <div
-            key={`${x}-${y}`}
-            className="h-1 w-1 bg-indigo-200 rounded-full absolute"
-            style={{ left: x, top: y }}
+            key={`${row}-${col}`}
+            style={{
+              height: `${size}px`,
+              width: `${size}px`,
+              backgroundColor: distance < 50 ? '#4f90f2' : '#ffffff',
+              borderRadius: '50%',
+              position: 'absolute',
+              left: `${x}px`,
+              top: `${y}px`,
+              opacity: opacity,
+              transition: 'all 0.2s ease-out',
+            }}
           />
         );
       }
     }
+
     return dots;
   };
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  // Helper function to normalize widget types
+  const getNormalizedType = (widgetConfig) => {
+    if (!widgetConfig || !widgetConfig.type) return 'unknown';
+
+    // Remove any '3d_' prefix and convert to lowercase
+    const type = widgetConfig.type.toLowerCase().replace('3d_', '');
+
+    // Map similar types to a standard type
+    switch (type) {
+      case 'switch':
+      case 'toggle':
+        return 'switch';
+      case 'slider':
+      case 'range':
+        return 'slider';
+      case 'button':
+      case 'pushbutton':
+        return 'button';
+      case 'togglebutton':
+        return 'togglebutton';
+      case 'gauge':
+      case 'meter':
+        return 'gauge';
+      case 'number_input':
+      case 'numberinput':
+      case 'number':
+        return 'number_input';
+      case 'text_input':
+      case 'textinput':
+      case 'text':
+        return 'text_input';
+      case 'color_picker':
+      case 'colorpicker':
+      case 'color':
+        return 'color_picker';
+      default:
+        return type;
+    }
+  };
+
+  // Helper function to get default values based on widget type
+  const getDefaultValueForType = (type) => {
+    switch (type) {
+      case 'switch':
+      case 'togglebutton':
+        return false;
+      case 'slider':
+      case 'gauge':
+        return 50;
+      case 'button':
+        return false;
+      case 'number_input':
+        return 0;
+      case 'text_input':
+        return '';
+      case 'color_picker':
+        return '#2196F3';
+      default:
+        return null;
+    }
+  };
+
+  const renderSidebarContent = () => {
+    switch (activeSidebarTab) {
+      case 'components':
+        return (
+          <>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">IoT Widgets</h2>
+            {loadingWidgets ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : availableWidgets.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No components available
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {availableWidgets.map((widget) => (
+                  <div
+                    key={widget._id}
+                    onClick={() => handleAddComponent(widget)}
+                    className="cursor-pointer border border-gray-300 rounded-md overflow-hidden hover:border-blue-400 transition-colors"
+                  >
+                    <div className="w-full h-24 flex items-center justify-center bg-gray-700 p-2">
+                      <Widget3D
+                        widget={widget}
+                        isPreviewMode={true}
+                        scale={0.8}
+                      />
+                    </div>
+                    <div className="text-center font-bold py-1 text-sm text-gray-300">
+                      {widget.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-6 text-sm text-gray-400">
+              <p>Click widgets to add to the playground.</p>
+              <p className="mt-2">Drag widgets to position them.</p>
+              <p className="mt-2">Hover over a widget to configure it.</p>
+              <p className="mt-2">Click on a widget to interact with it.</p>
+            </div>
+          </>
+        );
+      case 'states':
+        return (
+          <div>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Widget States</h2>
+            {Object.entries(widgetStates).length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No active widgets
+              </p>
+            ) : (
+              Object.entries(widgetStates).map(([instanceId, value]) => {
+                const component = components.find(c => c.instanceId.toString() === instanceId);
+                if (!component) return null;
+
+                // Get the widget type for better display
+                const config = parseWidgetConfig(component);
+                const type = config?.type?.replace('3d_', '') || 'unknown';
+
+                // Format the value based on type
+                let displayValue;
+                if (typeof value === 'boolean') {
+                  displayValue = value ? 'ON' : 'OFF';
+                } else if (typeof value === 'string' && value.startsWith('#')) {
+                  // Color value
+                  displayValue = (
+                    <div className="flex items-center">
+                      <div
+                        className="w-4 h-4 rounded-full mr-2"
+                        style={{ backgroundColor: value }}
+                      ></div>
+                      {value}
+                    </div>
+                  );
+                } else {
+                  displayValue = JSON.stringify(value);
+                }
+
+                return (
+                  <div
+                    key={instanceId}
+                    className="bg-gray-700 rounded-md p-3 mb-2"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-medium">{component?.name}</span>
+                      <span className="text-xs text-gray-400">{type}</span>
+                    </div>
+                    <div className="mt-1 text-blue-300 font-mono">
+                      {displayValue}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Header remains the same */}
       <div className="h-16 bg-gray-800 border-b border-gray-200 flex items-center justify-between px-4 shadow-sm z-10">
         <div className="flex-shrink-0 flex items-center">
           <Link
@@ -136,7 +654,7 @@ const Playground = () => {
           >
             BJIT
           </Link>
-          <span className="ml-2 text-lg font-semibold text-slate-800 dark:text-white">
+          <span className="ml-2 text-lg font-semibold text-slate-800 dark:text-white transition-colors duration-200">
             Cloud.Playground
           </span>
         </div>
@@ -144,30 +662,34 @@ const Playground = () => {
           <button className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700">
             Preview
           </button>
-          <button className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200">
+          <button
+            onClick={handleExportPlayground}
+            className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200"
+          >
             Export
           </button>
-          <Link to ='/dashboard'><button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
-            Dashboard
-          </button></Link>
+          <button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
+            Settings
+          </button>
           <button
             className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
             onClick={fetchAvailableWidgets}
           >
-            Refresh Components
+            Refresh Widgets
           </button>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden p-4">
+        {/* Sidebar navigation remains the same */}
         <div className="w-16 bg-gray-800 flex flex-col items-center py-4">
           <button
-            className={`p-3 rounded-md mb-2 ${
-              activeSidebarTab === 'components'
+            className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'components'
                 ? 'bg-gray-700 text-white'
                 : 'text-gray-400 hover:text-white'
-            }`}
+              }`}
             onClick={() => setActiveSidebarTab('components')}
+            title="IoT Widgets"
           >
             <svg
               className="w-6 h-6"
@@ -184,70 +706,68 @@ const Playground = () => {
               />
             </svg>
           </button>
+          <button
+            className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'states'
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-400 hover:text-white'
+              }`}
+            onClick={() => setActiveSidebarTab('states')}
+            title="Widget States"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+              />
+            </svg>
+          </button>
         </div>
 
-        <div className="flex-1 relative bg-gray-900 p-2 m-2 overflow-hidden" ref={gridRef}>
-          <DndContext
-            sensors={sensors}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToWindowEdges]}
-          >
-            <SortableContext items={components.map((c) => c.instanceId.toString())}>
-              <div className="relative h-full w-full" style={{ padding: '10px' }}>
-                {createGridPattern()}
-                {components.map((component) => (
-                  <DraggableComponent key={component.instanceId} component={component} />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+        <div className="flex-1 relative bg-gray-900 p-4" ref={gridRef}>
+          <div className="relative h-full w-full">
+            {gridPattern}
+            <AnimatePresence>
+              {components.map((component) => (
+                <DraggableComponent
+                  key={component.instanceId}
+                  component={component}
+                  onValueChanged={handleValueChanged}
+                  onDelete={handleDeleteComponent}
+                  onConfigClick={() => handleConfigClick(component)}
+                  onDrag={handleComponentDrag}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
 
         <div className="w-64 bg-gray-800 p-4 overflow-y-auto">
-          {activeSidebarTab === 'components' && (
-            <div>
-              <h2 className="text-lg font-bold mb-4 text-gray-100">Components</h2>
-              {loadingWidgets ? (
-                <div className="flex justify-center items-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                </div>
-              ) : availableWidgets.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No components available
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  {availableWidgets.map((widget) => (
-                    <div
-                      key={widget.id}
-                      onClick={() => handleAddComponent(widget)}
-                      className="cursor-pointer border border-gray-300 rounded-md overflow-hidden hover:border-blue-400 transition-colors"
-                    >
-                      <img
-                        src={widget.image || DEFAULT_IMAGE}
-                        alt={widget.name}
-                        className="w-full h-16 object-cover bg-gray-100"
-                      />
-                      <div className="text-center font-bold py-1 text-sm text-gray-300">
-                        {widget.name}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="mt-6 text-sm text-gray-800">
-                <p>Click components to add to the grid.</p>
-                <p className="mt-2">Components will snap to the dotted grid.</p>
-              </div>
-            </div>
-          )}
+          {renderSidebarContent()}
         </div>
-
       </div>
 
       <footer className="bg-gray-800 text-white text-center py-2">
-        <p>&copy; 2023 Cloud.Playground by BJIT</p>
+        <p>&copy; 2024 Cloud.Playground by BJIT</p>
       </footer>
+
+      {/* Configuration Modal */}
+      <WidgetConfigModal
+        widget={selectedWidget}
+        isOpen={configModalOpen}
+        onClose={() => {
+          setConfigModalOpen(false);
+          setSelectedWidget(null);
+        }}
+        onSave={handleSaveConfig}
+      />
     </div>
   );
 };
