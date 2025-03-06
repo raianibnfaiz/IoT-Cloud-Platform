@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import MainLayout from '../../components/Layout/MainLayout';
 
 const CaseStudies = () => {
     const caseStudies = [
@@ -59,6 +60,8 @@ const CaseStudies = () => {
     };
 
     return (
+        <MainLayout>
+      <section className="flex-1 bg-gray-900">
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
             {/* Hero Section */}
             <div className="pt-20 pb-16 text-center">
@@ -171,6 +174,8 @@ const CaseStudies = () => {
                 </div>
             </div>
         </div>
+        </section>
+    </MainLayout>
     );
 };
 

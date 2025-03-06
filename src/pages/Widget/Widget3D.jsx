@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import { useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Box, Sphere, Cylinder, RoundedBox } from '@react-three/drei';
@@ -158,9 +159,6 @@ const ButtonWidget = ({ config, isPressed, scale }) => {
   
   useFrame(() => {
     if (buttonRef.current) {
-      // Remove rotation
-      // buttonRef.current.rotation.y += 0.01;
-      
       // Button press animation
       if (isPressed) {
         buttonRef.current.position.z = -0.1;
@@ -316,14 +314,7 @@ const TextInputWidget = ({ config, value = '', scale }) => {
   
   const colors = config?.appearance?.colors || {};
   const backgroundColor = colors.background || '#FFFFFF';
-  const textColor = colors.text || '#212121';
-  
-  useFrame(() => {
-    // Remove rotation
-    // if (inputRef.current) {
-    //   inputRef.current.rotation.y += 0.01;
-    // }
-  });
+  const textColor = colors.text || '#212121'
   
   return (
     <group ref={inputRef} scale={scale}>
@@ -373,13 +364,6 @@ const NumberInputWidget = ({ config, value = 0, scale }) => {
   const backgroundColor = colors.background || '#FFFFFF';
   const textColor = colors.text || '#212121';
   const buttonColor = colors.buttons || '#2196F3';
-  
-  useFrame(() => {
-    // Remove rotation
-    // if (inputRef.current) {
-    //   inputRef.current.rotation.y += 0.01;
-    // }
-  });
   
   return (
     <group ref={inputRef} scale={scale}>
@@ -457,13 +441,6 @@ const ToggleButtonWidget = ({ config, isActive, scale }) => {
   const inactiveColor = colors.inactive || '#F44336';
   const textColor = colors.text || '#FFFFFF';
   
-  useFrame(() => {
-    // Remove rotation
-    // if (buttonRef.current) {
-    //   buttonRef.current.rotation.y += 0.01;
-    // }
-  });
-  
   return (
     <group ref={buttonRef} scale={scale}>
       {/* Button base */}
@@ -523,13 +500,6 @@ const ColorPickerWidget = ({ config, selectedColor, scale }) => {
   
   // Default color palette
   const colorPalette = ['#F44336', '#2196F3', '#4CAF50', '#FFEB3B', '#9C27B0', '#FF9800'];
-  
-  useFrame(() => {
-    // Remove rotation
-    // if (pickerRef.current) {
-    //   pickerRef.current.rotation.y += 0.01;
-    // }
-  });
   
   return (
     <group ref={pickerRef} scale={scale}>
@@ -606,7 +576,7 @@ const Widget3D = ({
   isPreviewMode = true, 
   onValueChanged,
   onConfigClick,
-  scale = 1
+  scale = 1.5
 }) => {
   // Remove unused isHovered state
   // const [isHovered, setIsHovered] = useState(false);

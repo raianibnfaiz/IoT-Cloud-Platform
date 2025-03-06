@@ -24,10 +24,8 @@ const AddWidgetModal = ({ templateId, templateDetails, availableWidgets }) => {
 
   // Get available pins from template details
   const getAvailablePins = () => {
-    //console.log(templateDetails?.template?.virtual_pins);
     return templateDetails?.template?.virtual_pins || [];  // Assuming you might want to filter by `is_used` or any other logic
   };
-  console.log(templateDetails.template.template_id);
 
   // Function to add a widget to a template
   const addWidgetToTemplate = async (templateId, widgetData) => {
@@ -51,7 +49,6 @@ const AddWidgetModal = ({ templateId, templateDetails, availableWidgets }) => {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      console.log("Widget added successfully:", data);
       return data;
     } catch (error) {
       console.error("Failed to add widget to template:", error);
@@ -77,7 +74,6 @@ const AddWidgetModal = ({ templateId, templateDetails, availableWidgets }) => {
         pinConfig: selectedPins,
         position: { x: parseInt(posX), y: parseInt(posY) }
       };
-      console.log(widgetData);
       await addWidgetToTemplate(templateId, widgetData);
       setMessage("Widget added successfully!");
       setTimeout(() => setMessage(""), 3000);

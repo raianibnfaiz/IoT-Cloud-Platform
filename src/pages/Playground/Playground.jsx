@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
@@ -123,6 +123,7 @@ DraggableComponent.propTypes = {
 };
 
 const Playground = () => {
+  const { templateId } = useParams();
   const [components, setComponents] = useState([]);
   const [activeSidebarTab, setActiveSidebarTab] = useState('components');
   const [availableWidgets, setAvailableWidgets] = useState([]);
@@ -134,8 +135,87 @@ const Playground = () => {
   const gridRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [lastComponentPosition, setLastComponentPosition] = useState(null);
+  const [templateDetails, setTemplateDetails] = useState(null);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
   const token = sessionStorage.getItem('authToken');
+
+  // Fetch template details if templateId is provided
+  useEffect(() => {
+    if (templateId) {
+      fetchTemplateDetails();
+    }
+  }, [templateId]);
+
+  // Function to fetch template details
+  const fetchTemplateDetails = async () => {
+    if (!templateId) return;
+
+    setLoadingTemplate(true);
+    try {
+      const response = await fetch(
+        // Use the cloud server URL
+        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
+        {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch template with ID: ${templateId}`);
+      }
+
+      const data = await response.json();
+      console.log("Template details:", data);
+      setTemplateDetails(data);
+      
+      // If template has widgets, add them to the playground
+      if (data.template && data.template.widget_list && data.template.widget_list.length > 0) {
+        // Check if we need to fetch widget details separately (if widget_id is null)
+        if (data.template.widget_list.some(widget => widget.widget_id === null)) {
+          // First, get all widgets for reference
+          await fetchAvailableWidgets();
+          
+          // Map the widget list to components, using availableWidgets for widget details
+          const templateComponents = data.template.widget_list.map((widget, index) => {
+            // Try to find the widget in availableWidgets using the _id from pinConfig or other means
+            // For now, just create a placeholder component
+            return {
+              _id: widget._id || `placeholder_${index}`,
+              name: `Widget ${index + 1}`,
+              type: "unknown",
+              instanceId: `template_${widget._id}_${index}`,
+              position: widget.position || { x: 100 + index * 50, y: 100 + index * 50 },
+              // Store pinConfig for later use
+              pinConfig: widget.pinConfig
+            };
+          });
+          
+          setComponents(templateComponents);
+          console.log("Created placeholder components:", templateComponents);
+        } else {
+          // Convert template widgets to playground components
+          const templateComponents = data.template.widget_list.map((widget, index) => ({
+            ...widget.widget_id,
+            instanceId: `template_${widget.widget_id?._id || widget._id}_${index}`,
+            position: widget.position || { x: 100 + index * 50, y: 100 + index * 50 },
+            // Store pinConfig for reference
+            pinConfig: widget.pinConfig
+          }));
+          
+          setComponents(templateComponents);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching template details:', error);
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
 
   useEffect(() => {
     fetchAvailableWidgets();
@@ -545,15 +625,24 @@ const Playground = () => {
       case 'components':
         return (
           <>
-            <h2 className="text-lg font-bold mb-4 text-gray-100">IoT Widgets</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Available Widgets</h2>
+
+            {/* Show template information if template is loaded */}
+            {templateDetails && (
+              <div className="mb-6 p-3 bg-gray-700 rounded-lg">
+                <h3 className="text-md font-semibold text-white mb-2">Template Details</h3>
+                <p className="text-gray-300 text-sm">Name: {templateDetails.template.template_name}</p>
+                <p className="text-gray-300 text-sm">ID: {templateDetails.template.template_id}</p>
+                <p className="text-gray-300 text-sm">
+                  Pins: {templateDetails.template.virtual_pins?.length || 0}
+                </p>
+              </div>
+            )}
+
             {loadingWidgets ? (
-              <div className="flex justify-center items-center py-8">
+              <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
-            ) : availableWidgets.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No components available
-              </p>
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 {availableWidgets.map((widget) => (
@@ -576,12 +665,6 @@ const Playground = () => {
                 ))}
               </div>
             )}
-            <div className="mt-6 text-sm text-gray-400">
-              <p>Click widgets to add to the playground.</p>
-              <p className="mt-2">Drag widgets to position them.</p>
-              <p className="mt-2">Hover over a widget to configure it.</p>
-              <p className="mt-2">Click on a widget to interact with it.</p>
-            </div>
           </>
         );
       case 'states':
@@ -621,16 +704,23 @@ const Playground = () => {
                 }
 
                 return (
-                  <div
+                  <div 
                     key={instanceId}
-                    className="bg-gray-700 rounded-md p-3 mb-2"
+                    className="bg-gray-700 p-3 rounded-lg mb-3"
                   >
-                    <div className="flex justify-between items-center">
-                      <span className="text-white font-medium">{component?.name}</span>
-                      <span className="text-xs text-gray-400">{type}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-200 font-medium truncate mr-2">
+                        {component.name || `Widget ${instanceId}`}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {type}
+                      </span>
                     </div>
-                    <div className="mt-1 text-blue-300 font-mono">
-                      {displayValue}
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 text-sm">Value:</span>
+                      <span className="bg-gray-600 px-2 py-1 rounded text-gray-200 text-sm">
+                        {displayValue}
+                      </span>
                     </div>
                   </div>
                 );
@@ -645,8 +735,8 @@ const Playground = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Header remains the same */}
-      <div className="h-16 bg-gray-800 border-b border-gray-200 flex items-center justify-between px-4 shadow-sm z-10">
+      {/* Header */}
+      <div className="bg-gray-700 p-4 flex justify-between items-center">
         <div className="flex-shrink-0 flex items-center">
           <Link
             to="/"
@@ -654,36 +744,51 @@ const Playground = () => {
           >
             BJIT
           </Link>
-          <span className="ml-2 text-lg font-semibold text-slate-800 dark:text-white transition-colors duration-200">
+          <span className="ml-2 text-lg font-semibold text-white transition-colors duration-200">
             Cloud.Playground
+            {templateDetails && (
+              <span className="ml-2 text-sm bg-blue-600 px-2 py-1 rounded">
+                Template: {templateDetails.template.template_name}
+              </span>
+            )}
           </span>
         </div>
         <div className="flex space-x-4">
-          <button className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700">
-            Preview
-          </button>
-          <button
-            onClick={handleExportPlayground}
-            className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200"
-          >
-            Export
-          </button>
-          <button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
-            Settings
-          </button>
-          <button
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-            onClick={fetchAvailableWidgets}
-          >
-            Refresh Widgets
-          </button>
+          {loadingTemplate ? (
+            <div className="px-3 py-1 bg-gray-600 text-white rounded flex items-center">
+              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+              Loading Template...
+            </div>
+          ) : (
+            <>
+              <button className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700">
+                Preview
+              </button>
+              <button
+                onClick={handleExportPlayground}
+                className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200"
+              >
+                Save
+              </button>
+              
+              <button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
+                Settings
+              </button>
+              <button
+                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                onClick={fetchAvailableWidgets}
+              >
+                Refresh Widgets
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden p-4">
         {/* Sidebar navigation remains the same */}
         <div className="w-16 bg-gray-800 flex flex-col items-center py-4">
-          <button
+          {/* <button
             className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'components'
                 ? 'bg-gray-700 text-white'
                 : 'text-gray-400 hover:text-white'
@@ -705,8 +810,8 @@ const Playground = () => {
                 d="M4 6h16M4 12h8m-8 6h16"
               />
             </svg>
-          </button>
-          <button
+          </button> */}
+          {/* <button
             className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'states'
                 ? 'bg-gray-700 text-white'
                 : 'text-gray-400 hover:text-white'
@@ -728,10 +833,10 @@ const Playground = () => {
                 d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
               />
             </svg>
-          </button>
+          </button> */}
         </div>
 
-        <div className="flex-1 relative bg-gray-900 p-4" ref={gridRef}>
+        <div className="flex-1 relative bg-gray-900 p-2 m-2 overflow-hidden" ref={gridRef}>
           <div className="relative h-full w-full">
             {gridPattern}
             <AnimatePresence>
@@ -767,6 +872,7 @@ const Playground = () => {
           setSelectedWidget(null);
         }}
         onSave={handleSaveConfig}
+        templateId={templateId}
       />
     </div>
   );

@@ -137,7 +137,7 @@ const Navbar = () => {
           >
             <Link to="/" className="flex items-center space-x-2">
               <motion.div 
-                className="h-10 w-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center"
+                className="h-10 w-15 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
               >

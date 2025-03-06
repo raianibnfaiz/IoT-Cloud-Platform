@@ -52,9 +52,9 @@ const router = createBrowserRouter([
       },
       {
         path: "features",
-        element: <PrivateRoute>
+        element: 
             <Features></Features>
-        </PrivateRoute>,
+        
       },
       {
         path: "profile",
@@ -94,6 +94,12 @@ const router = createBrowserRouter([
       },
       {
         path: "playground",
+        element: <PrivateRoute>
+            <Playground></Playground>
+        </PrivateRoute>,
+      },
+      {
+        path: "playground/:templateId",
         element: <PrivateRoute>
             <Playground></Playground>
         </PrivateRoute>,

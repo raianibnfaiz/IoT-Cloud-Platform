@@ -30,7 +30,7 @@ const TemplateDetails = () => {
     const username = sessionStorage.getItem("username")?.replace(/"/g, "") || "Guest";
     const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
     const token = sessionStorage.getItem("authToken");
-    console.log("Available widgets:", availableWidgets);
+
     // Add this function to fetch widgets from the server
     const fetchAvailableWidgets = async () => {
         setLoadingWidgets(true);
@@ -50,7 +50,6 @@ const TemplateDetails = () => {
             }
             const data = await response.json();
             setAvailableWidgets(data);
-            console.log("Available widgets:", data);
         } catch (error) {
             console.error("Failed to fetch available widgets:", error);
         } finally {
@@ -146,20 +145,21 @@ const TemplateDetails = () => {
             try {
                 const response = await fetch(
                     `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
+                    // `http://localhost:8000/users/templates/${templateId}`,
                     {
                         method: "GET",
                         headers: {
                             accept: "application/json",
                             Authorization:
-                                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJhaWFuaWJuZmFpekBnbWFpbC5jb20iLCJ1c2VyX2lkIjoidXNyX2MxYzhiNThmMGIiLCJpYXQiOjE3Mzk1MjQ0MTJ9.7OV0FSmG0K_vGhPvYMrthJkQFGGnQVFAGRCXS5qkumk",
+                                `Bearer ${token}`,
                         },
                     }
                 );
+                
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
                 const data = await response.json();
-                console.log("Template details:", data);
                 setTemplateDetails(data);
             } catch (error) {
                 console.error("Failed to fetch template details:", error);
@@ -606,7 +606,7 @@ const TemplateDetails = () => {
                                 </div>
 
                                 {/* Only show Add Widgets when sidebar is expanded */}
-                                {!sidebarCollapsed && (
+                                {/* {!sidebarCollapsed && (
                                     <div className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer">
                                         <div className="flex items-center">
                                             <svg
@@ -627,10 +627,10 @@ const TemplateDetails = () => {
                                             </span>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
 
                                 {/* Widgets dropdown section */}
-                                <div className="space-y-1">
+                                {/* <div className="space-y-1">
                                     <div
                                         className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white cursor-pointer"
                                         onClick={() => setWidgetsExpanded(!widgetsExpanded)}
@@ -683,10 +683,10 @@ const TemplateDetails = () => {
                                                     />
                                                 </svg>
                                             ))}
-                                    </div>
+                                    </div> */}
 
                                     {/* Widget list dropdown */}
-                                    {widgetsExpanded &&
+                                    {/* {widgetsExpanded &&
                                         !sidebarCollapsed &&
                                         templateDetails.template.widget_list && (
                                             <div className="ml-4 pl-4 border-l border-slate-700 space-y-1 animate-fadeIn">
@@ -709,8 +709,8 @@ const TemplateDetails = () => {
                                                     )
                                                 )}
                                             </div>
-                                        )}
-                                </div>
+                                        )} */}
+                                {/* </div> */}
 
                                 <div className="space-y-1">
                                     <div
@@ -939,7 +939,7 @@ const TemplateDetails = () => {
                                 {templateDetails.template.template_name}
                             </h1>
                             <div className="flex items-center space-x-2">
-                                <Link to="/playground">
+                                <Link to={`/playground/${templateId}`}>
                                     <button className="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-800 dark:text-white flex items-center hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                                         <FaEdit className="mr-1" />
                                         <span>Edit</span>
@@ -1051,7 +1051,7 @@ const TemplateDetails = () => {
 
                         {/* Widgets List Section */}
                         <div className="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6 border border-slate-200 dark:border-slate-700">
-                            <div className="flex justify-between items-center mb-4">
+                            {/* <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
                                     Widgets
                                 </h2>
@@ -1062,7 +1062,7 @@ const TemplateDetails = () => {
                                     <FaPlus className="mr-1" />
                                     <span>Add Widget</span>
                                 </button>
-                            </div>
+                            </div> */}
 
                             {templateDetails?.template?.widget_list &&
                                 templateDetails.template.widget_list.length > 0 ? (
@@ -1111,8 +1111,7 @@ const TemplateDetails = () => {
                                                     >
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <div className="text-sm font-medium text-slate-900 dark:text-white">
-                                                                {widget.widget_id?.name ||
-                                                                    `Widget ${index + 1}`}
+                                                                {widget.widget_id?.name || "Unknown"}
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">

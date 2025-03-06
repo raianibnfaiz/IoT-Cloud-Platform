@@ -269,7 +269,7 @@ const Dashboard = () => {
                       d={
                         sidebarCollapsed
                           ? "M4 6h16M4 12h16M4 18h16"
-                          : "M4 6h16M4 12h8M4 18h16"
+                          : "M4 6h16M4 12h10M4 18h16"
                       }
                     />
                   </svg>
@@ -521,7 +521,7 @@ const Dashboard = () => {
           {/* Sidebar Navigation */}
           <div
             className={`${
-              sidebarCollapsed ? "w-16" : "w-64"
+              sidebarCollapsed ? "w-24" : "w-64"
             } min-h-screen bg-slate-800 text-white transition-all duration-300`}
           >
             <div className="p-4">
