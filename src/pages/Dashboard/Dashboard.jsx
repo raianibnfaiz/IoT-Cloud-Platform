@@ -738,7 +738,7 @@ const Dashboard = () => {
                     className="overflow-hidden bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
                   >
                     <Link
-                      to={`/template/${template._id}`}
+                      to={`/template/${template.template_id}`}
                       className="font-bold text-lg text-gray-300 hover:underline"
                     >
                       <div className="p-6 flex flex-col justify-center items-center">
