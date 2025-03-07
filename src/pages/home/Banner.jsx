@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 const Banner = () => {
     return (
-        <div className="hero bg-base-200 min-h-96">
+        <div className="hero bg-gray-900 min-h-96 text-white">
             <div className="hero-content flex-col lg:flex-row-reverse">
                 <div className='flex-1'>
                     <motion.img
@@ -23,7 +23,7 @@ const Banner = () => {
                     <motion.h1
                         animate={{ x: 50 }}
                         transition={{ duration: 1.5, delay: 1, ease: easeOut, repeat: Infinity }}
-                        className="text-6xl font-bold">IoT complexity   <motion.span
+                        className="text-6xl font-bold text-white">IoT complexity <motion.span
                             animate={{ color: ['#ecff33', '#33ffe3', '#ff6133'] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
                         >solved</motion.span> at every stage</motion.h1>
