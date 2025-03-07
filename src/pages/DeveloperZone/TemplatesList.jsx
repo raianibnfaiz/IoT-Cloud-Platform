@@ -18,16 +18,6 @@ const TemplatesList = ({ templates, setTemplates }) => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <div
-          className="spinner-border animate-spin inline-block w-12 h-12 border-4 border-t-4 border-t-blue-500 border-r-green-500 border-b-yellow-500 border-l-red-500 rounded-full"
-          role="status"
-        ></div>
-      </div>
-    );
-  }
 
   const handleDelete = async (template_id) => {
     try {
@@ -75,6 +65,25 @@ const TemplatesList = ({ templates, setTemplates }) => {
   const toggleDropdown = (index) => {
     setDropdownOpen(dropdownOpen === index ? -1 : index);
   };
+  // Display loading spinner while fetching data
+  if (loading) {
+    return (
+      <div
+        className={`min-h-screen flex justify-center items-center ${darkMode ? "dark bg-slate-900" : "bg-slate-50"
+          }`}
+      >
+        <div
+          className="spinner-border animate-spin inline-block w-12 h-12 border-4 rounded-full"
+          style={{
+            borderTopColor: "#10b981",
+            borderRightColor: "transparent",
+            borderBottomColor: "#10b981",
+            borderLeftColor: "transparent",
+          }}
+        ></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-grow p-5 transition-all duration-300">
