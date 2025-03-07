@@ -61,6 +61,19 @@ const TemplateDetails = () => {
     }
   };
 
+   // Handle sign out
+   const handleSignOut = () => {
+    signOutUser()
+      .then(() => {
+        console.log("Successful sign out");
+        sessionStorage.clear();
+    
+      })
+      .catch((error) => {
+        console.log("Failed to sign out:", error);
+      });
+  };
+
   // Call the function when the component mounts
   useEffect(() => {
     fetchAvailableWidgets();
@@ -458,8 +471,7 @@ const TemplateDetails = () => {
                         </a>
                         </Link>
                         <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                        <a
-                          href="#"
+                        <button onClick={handleSignOut}><a
                           className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                           <div className="flex items-center">
@@ -479,6 +491,7 @@ const TemplateDetails = () => {
                             Sign out
                           </div>
                         </a>
+                        </button>
                       </div>
                     )}
                   </div>
