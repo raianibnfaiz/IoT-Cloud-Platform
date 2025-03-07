@@ -276,24 +276,24 @@ const Dashboard = () => {
   };
   console.log(templates);
   return (
-    <div className={`min-h-screen ${darkMode ? "dark" : ""}`}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-900">
+      <div className="min-h-screen bg-gray-900 transition-colors duration-200">
         {/* Top Navigation Bar */}
-        <nav className="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 transition-colors duration-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="bg-gray-800 shadow-lg border-b border-gray-700">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
             <div className="flex justify-between h-16">
               <div className="flex items-center">
                 <div className="flex-shrink-0 flex items-center">
                   <div className="h-10 w-10 rounded bg-emerald-500 flex items-center justify-center text-white font-bold">
                     BJIT
                   </div>
-                  <span className="ml-2 text-lg font-semibold text-slate-800 dark:text-white transition-colors duration-200">
+                  <span className="ml-2 text-lg font-semibold text-white hidden sm:block">
                     Cloud.Console
                   </span>
                 </div>
                 <button
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className="ml-4 p-1 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  className="ml-4 p-1 rounded-md text-gray-300 hover:text-white hover:bg-gray-700"
                 >
                   <svg
                     className="h-6 w-6"
@@ -315,13 +315,13 @@ const Dashboard = () => {
                 </button>
               </div>
               <div className="flex items-center">
-                <div className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 text-xs font-medium mr-4 transition-colors duration-200">
+                <div className="hidden sm:block px-3 py-1 rounded-full bg-emerald-900 text-emerald-200 text-xs font-medium mr-4">
                   Messages used: 11 of 30k
                 </div>
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setNotificationsOpen(!notificationsOpen)}
-                    className="p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 relative"
+                    className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 relative"
                   >
                     <svg
                       className="h-5 w-5"
@@ -337,41 +337,7 @@ const Dashboard = () => {
                       />
                     </svg>
                     {notifications.some((n) => !n.read) && (
-                      <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-800"></span>
-                    )}
-                  </button>
-                  <button
-                    onClick={toggleDarkMode}
-                    className="p-2 rounded-full text-slate-500 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >
-                    {darkMode ? (
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                        />
-                      </svg>
+                      <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-gray-800"></span>
                     )}
                   </button>
 
@@ -396,89 +362,41 @@ const Dashboard = () => {
                           </span>
                         )}
                       </div>
-                      <motion.svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        animate={{ rotate: userDropdownOpen ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </motion.svg>
-                    </motion.button>
+                    </button>
 
-                    <AnimatePresence>
-                      {userDropdownOpen && (
-                        <motion.div
-                          initial="hidden"
-                          animate="visible"
-                          exit="hidden"
-                          variants={dropdownVariants}
-                          className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50"
+                    {/* Dropdown Menu */}
+                    {userMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                        <div className="px-4 py-3 border-b border-gray-700">
+                          <p className="text-sm text-white font-medium">
+                            {user?.displayName || "User"}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {user?.email || "user@example.com"}
+                          </p>
+                        </div>
+                        
+                        <Link
+                          to="/profile"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
                         >
-                          <div className="p-4 border-b border-gray-100">
-                            <p className="text-sm font-medium text-gray-900">
-                              {userName || "User"}
-                            </p>
-                            <p className="text-sm text-gray-500">{userEmail}</p>
-                          </div>
-                          <div className="py-2">
-                            {userMenuItems.map((item) => (
-                              <Link
-                                key={item.name}
-                                to={item.path}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setUserDropdownOpen(false)}
-                              >
-                                <svg
-                                  className="w-5 h-5 mr-3 text-gray-400"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d={item.icon}
-                                  />
-                                </svg>
-                                {item.name}
-                              </Link>
-                            ))}
-                            <button
-                              onClick={() => {
-                                signOutUser();
-                                setUserDropdownOpen(false);
-                              }}
-                              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                            >
-                              <svg
-                                className="w-5 h-5 mr-3 text-red-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                />
-                              </svg>
-                              Sign Out
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          Profile
+                        </Link>
+                        <Link
+                          to="/settings"
+                          className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+                        >
+                          Settings
+                        </Link>
+                        <div className="border-t border-gray-700"></div>
+                        <button
+                          onClick={handleSignOut}
+                          className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -487,14 +405,14 @@ const Dashboard = () => {
 
           {/* Notification Panel */}
           {notificationsOpen && (
-            <div className="absolute right-4 mt-2 w-80 rounded-md shadow-lg py-1 bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 z-50 transition-all duration-200">
-              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                <h3 className="text-sm font-medium text-slate-800 dark:text-white">
+            <div className="absolute right-4 mt-2 w-80 rounded-md shadow-lg py-1 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+              <div className="px-4 py-2 border-b border-gray-700 flex justify-between items-center">
+                <h3 className="text-sm font-medium text-white">
                   Notifications
                 </h3>
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs text-emerald-500 hover:text-emerald-600"
+                  className="text-xs text-emerald-400 hover:text-emerald-300"
                 >
                   Mark all as read
                 </button>
@@ -503,31 +421,23 @@ const Dashboard = () => {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700 ${
-                      !notification.read ? "bg-slate-50 dark:bg-slate-700" : ""
+                    className={`px-4 py-2 hover:bg-gray-700 ${
+                      !notification.read ? "bg-gray-700" : ""
                     }`}
                   >
                     <div className="flex justify-between">
-                      <p className="text-sm text-slate-800 dark:text-white">
+                      <p className="text-sm text-gray-300">
                         {notification.message}
                       </p>
                       {!notification.read && (
-                        <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                        <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {notification.time}
                     </p>
                   </div>
                 ))}
-              </div>
-              <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-700">
-                <a
-                  href="#"
-                  className="text-xs text-center block text-emerald-500 hover:text-emerald-600"
-                >
-                  View all notifications
-                </a>
               </div>
             </div>
           )}
@@ -537,13 +447,13 @@ const Dashboard = () => {
           {/* Sidebar Navigation */}
           <div
             className={`${
-              sidebarCollapsed ? "w-24" : "w-64"
-            } min-h-screen bg-slate-800 text-white transition-all duration-300`}
+              sidebarCollapsed ? "w-16" : "w-64"
+            } min-h-screen bg-gray-800 transition-all duration-300 fixed left-0 z-30 md:relative`}
           >
             <div className="p-4">
               <div className="space-y-1">
                 <Link to="/">
-                  <a className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-slate-700 text-white">
+                  <div className="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-gray-700 text-white">
                     <svg
                       className="h-5 w-5"
                       fill="none"
@@ -554,32 +464,33 @@ const Dashboard = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                       />
                     </svg>
                     {!sidebarCollapsed && <span className="ml-3">Home</span>}
-                  </a>
+                  </div>
                 </Link>
-                <Link to="/dashboard">
-                  <a className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white">
-                    <svg
-                      className="h-5 w-5 text-emerald-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                      />
-                    </svg>
-                    {!sidebarCollapsed && (
-                      <span className="ml-3">Developer Zone</span>
-                    )}
-                  </a>
-                </Link>
+                <a
+                  href="#"
+                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white"
+                >
+                  <svg
+                    className="h-5 w-5 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 00-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                  {!sidebarCollapsed && (
+                    <span className="ml-3">Developer Zone</span>
+                  )}
+                </a>
                 <a
                   href="#"
                   className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white"
@@ -625,17 +536,17 @@ const Dashboard = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 p-6">
+          <div className={`flex-1 p-4 sm:p-6 ${sidebarCollapsed ? 'ml-16' : 'ml-64'} md:ml-0`}>
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-white transition-colors duration-200">
+              <h1 className="text-2xl font-bold text-white">
                 Templates
               </h1>
-              <div className="mt-4 flex justify-between items-center">
-                <div className="w-full max-w-lg">
+              <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="w-full sm:max-w-lg">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg
-                        className="h-5 w-5 text-slate-400"
+                        className="h-5 w-5 text-gray-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -650,7 +561,7 @@ const Dashboard = () => {
                     </div>
                     <input
                       type="text"
-                      className="block w-full pl-10 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-md leading-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors duration-200"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md leading-5 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       placeholder="Search Templates"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -659,7 +570,7 @@ const Dashboard = () => {
                 </div>
                 <button
                   onClick={handleOpenModal}
-                  className="px-4 py-2 bg-emerald-500 text-white rounded-md shadow-sm hover:bg-emerald-600 flex items-center transition-colors duration-200"
+                  className="w-full sm:w-auto px-4 py-2 bg-emerald-600 text-white rounded-md shadow-sm hover:bg-emerald-700 flex items-center justify-center"
                 >
                   <svg
                     className="h-5 w-5 mr-1"
@@ -678,150 +589,117 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
-            {message && (
-              <div
-                className={`alert ${
-                  message.startsWith("✅") ? "alert-success" : "alert-error"
-                } mb-4`}
-              >
-                {message}
-              </div>
-            )}
-            <dialog id="templateModal" className="modal">
-              <div className="modal-box w-1/4 max-w-sm rounded-lg ">
-                <h2 className="text-2xl mb-6 font-bold text-center">
-                  Create a Template
-                </h2>
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    placeholder="Template Name"
-                    value={templateName}
-                    onChange={handleTemplateNameChange}
-                    className="input w-full mb-4 p-2 border-b-2 border-gray-300 rounded-lg"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    className="btn btn-success w-full p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700"
-                    disabled={loading}
-                  >
-                    {loading ? "Creating..." : "Add"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="btn w-full mt-4 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            </dialog>
 
-            {filteredTemplates.length === 0 ? (
-              <div className="text-center py-12">
-                <svg
-                  className="mx-auto h-12 w-12 text-slate-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-white">
-                  No templates found
-                </h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Try adjusting your search or create a new template.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredTemplates.map((template) => (
-                  <div
-                    key={template._id}
-                    className="overflow-hidden bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-                  >
-                    <Link
-                      to={`/template/${template.template_id}`}
-                      className="font-bold text-lg text-gray-300 hover:underline"
-                    >
-                      <div className="p-6 flex flex-col justify-center items-center">
-                        <div className="h-16 w-16 mb-4 text-emerald-500">
-                          <img
-                            src={
-                              template.widget_list.length > 0 &&
-                              template.widget_list[0].widget_id &&
-                              template.widget_list[0].widget_id.image
-                                ? template.widget_list[0].widget_id.image
-                                : "https://via.placeholder.com/64"
-                            }
-                            alt={template.template_name}
-                            className="w-full h-full rounded-full"
-                          />
-                        </div>
-                        <div className="mt-4 text-center">
-                          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-1 transition-colors duration-200">
-                            {template.template_name}
-                          </h3>
-                          <span className="inline-block px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs rounded-full transition-colors duration-200">
-                            {template.widget_list.length}{" "}
-                            {template.widget_list.length === 1
-                              ? "Widget"
-                              : "Widgets"}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <div className="px-6 py-2 bg-slate-50 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-600 flex justify-between transition-colors duration-200">
-                      <button className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors duration-200">
-                        <Link to={`/template/${template._id}`}> Edit</Link>
-                      </button>
-                      <button className="text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors duration-200">
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Empty Template Card (for adding new) */}
+            {/* Template Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredTemplates.map((template) => (
                 <div
-                  onClick={handleOpenModal}
-                  className="overflow-hidden border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-center h-64 hover:border-emerald-500 transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+                  key={template._id}
+                  className="bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  <div className="text-center p-6">
-                    <div className="mx-auto h-12 w-12 text-slate-400">
-                      <svg
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  <Link
+                    to={`/template/${template.template_id}`}
+                    className="block p-6"
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="h-16 w-16 mb-4">
+                        <img
+                          src={
+                            template.widget_list.length > 0 &&
+                            template.widget_list[0].widget_id &&
+                            template.widget_list[0].widget_id.image
+                              ? template.widget_list[0].widget_id.image
+                              : "https://via.placeholder.com/64"
+                          }
+                          alt={template.template_name}
+                          className="w-full h-full rounded-full"
                         />
-                      </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-white mb-2">
+                        {template.template_name}
+                      </h3>
+                      <span className="px-2 py-1 bg-emerald-900 text-emerald-200 text-xs rounded-full">
+                        {template.widget_list.length} {template.widget_list.length === 1 ? "Widget" : "Widgets"}
+                      </span>
                     </div>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      Create new template
-                    </p>
+                  </Link>
+                  <div className="px-6 py-2 bg-gray-700 border-t border-gray-600 flex justify-between rounded-b-lg">
+                    <Link
+                      to={`/template/${template._id}`}
+                      className="text-xs text-gray-300 hover:text-emerald-400"
+                    >
+                      Edit
+                    </Link>
+                    <button className="text-xs text-gray-300 hover:text-red-400">
+                      Delete
+                    </button>
                   </div>
                 </div>
+              ))}
+
+              {/* Add New Template Card */}
+              <div
+                onClick={handleOpenModal}
+                className="border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center h-64 hover:border-emerald-500 transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+              >
+                <div className="text-center p-6">
+                  <div className="mx-auto h-12 w-12 text-gray-400">
+                    <svg
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-400">
+                    Create new template
+                  </p>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Template Modal */}
+      <dialog id="templateModal" className="modal">
+        <div className="modal-box w-11/12 max-w-sm bg-gray-800 rounded-lg p-6">
+          <h2 className="text-2xl mb-6 font-bold text-white text-center">
+            Create a Template
+          </h2>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Template Name"
+              value={templateName}
+              onChange={handleTemplateNameChange}
+              className="w-full mb-4 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Add"}
+            </button>
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="w-full mt-4 p-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors duration-200"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </form>
+        </div>
+      </dialog>
     </div>
   );
 };
