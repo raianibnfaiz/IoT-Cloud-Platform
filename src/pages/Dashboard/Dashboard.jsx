@@ -1,84 +1,59 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import AuthContext from "../../context/AuthContext/AuthContext";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import templateImage from "../../assets/image/template.jpeg";
 
 const Dashboard = () => {
-  // State for theme toggle
-  const [darkMode, setDarkMode] = useState(false);
   const token = sessionStorage.getItem("authToken");
   const [loading, setLoading] = useState(false);
   const [templateName, setTemplateName] = useState("");
-  const { user, signOutUser } = useContext(AuthContext);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  // State for sidebar collapse
+  const { signOutUser } = useContext(AuthContext);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [message, setMessage] = useState("");
-  // State for search functionality
   const [searchQuery, setSearchQuery] = useState("");
 
   // Sample template data
   const [templates, setTemplates] = useState([]);
+
+  // Fetch templates function
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(
+        "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTemplates(response.data);
+    } catch (err) {
+      console.error("Error fetching templates:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
   const handleSignOut = () => {
     signOutUser()
       .then(() => {
         console.log("successful sign out");
       })
-      .catch((error) => {
+      .catch(() => {
         console.log("failed to sign out. stay here. don't leave me alone");
       });
   };
-  const userMenuItems = [
-    {
-      name: "Profile",
-      path: "/profile",
-      icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
-    },
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: "M3 3h18v18H3V3zm3 3v12h12V6H6z",
-    },
-    {
-      name: "Settings",
-      path: "/settings",
-      icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z",
-    },
-  ];
-  const userName = sessionStorage.getItem("username")
-    ? sessionStorage.getItem("username").replace(/"/g, "")
-    : null;
-  const userEmail = sessionStorage.getItem("userEmail")
-    ? sessionStorage.getItem("userEmail").replace(/"/g, "")
-    : null;
-  const userPhoto = sessionStorage.getItem("userPhoto")
-    ? sessionStorage.getItem("userPhoto").replace(/"/g, "")
-    : null;
 
-  const dropdownVariants = {
-    hidden: { opacity: 0, y: -10, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.2,
-        ease: "easeOut",
-      },
-    },
-  };
-  // Close menu when clicking outside
-  const closeMenu = () => {
-    setUserMenuOpen(false);
-  };
   const handleTemplateNameChange = (e) => {
     setTemplateName(e.target.value);
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
       const response = await fetch(
@@ -104,35 +79,25 @@ const Dashboard = () => {
       }
 
       const data = await response.json();
-      setTemplates([...templates, data.template]); // Add the new template to the state
-      setMessage(
-        `✅ Template created successfully: ${data.template.template_name}`
-      );
+      setTemplates([...templates, data.template]);
     } catch (err) {
       console.error(err);
-      setMessage(`❌ Error: ${err.message}`);
     } finally {
       setLoading(false);
       handleCloseModal();
-
-      // Display message for 3 seconds
-      setTimeout(() => {
-        setMessage("");
-      }, 3000);
-
-      fetchTemplates(); // Refresh the template list
+      fetchTemplates();
     }
   };
 
   const handleCloseModal = () => {
     const modal = document.getElementById("templateModal");
-    modal.close(); // Close the modal
-    setTemplateName(""); // Clear input field
+    modal.close();
+    setTemplateName("");
   };
 
   const handleOpenModal = () => {
     const modal = document.getElementById("templateModal");
-    modal.showModal(); // Open the modal
+    modal.showModal();
   };
 
   // State for notification panel
@@ -157,46 +122,18 @@ const Dashboard = () => {
     template.template_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Toggle dark mode and save preference
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // Save preference to localStorage
-    localStorage.setItem("darkMode", !darkMode);
+  // Mark all notifications as read
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((note) => ({ ...note, read: true })));
   };
 
-  // Load dark mode preference on mount
-  useEffect(() => {
-    const savedMode = localStorage.getItem("darkMode") === "true";
-    setDarkMode(savedMode);
-
-    // Apply dark mode class to body
-    if (savedMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+  // Toggle user menu
+  const toggleUserMenu = () => {
+    setUserMenuOpen(!userMenuOpen);
+    if (notificationsOpen) {
+      setNotificationsOpen(false);
     }
-  }, [darkMode]);
-
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const response = await axios.get(
-          "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
-          {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setTemplates(response.data);
-      } catch (error) {
-        console.error("Error fetching templates:", error);
-      }
-    };
-
-    fetchTemplates();
-  }, []);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -212,68 +149,6 @@ const Dashboard = () => {
     };
   }, [userMenuRef]);
 
-  // Function to mark all notifications as read
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((note) => ({ ...note, read: true })));
-  };
-
-  // Function to toggle user menu
-  const toggleUserMenu = () => {
-    setUserMenuOpen(!userMenuOpen);
-    // Close notifications panel if open
-    if (notificationsOpen) {
-      setNotificationsOpen(false);
-    }
-  };
-
-  // Icon components
-  const icons = {
-    device: (className) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className={className}
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
-        />
-      </svg>
-    ),
-    home: (className) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className={className}
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-        />
-      </svg>
-    ),
-    chart: (className) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className={className}
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.5}
-          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-        />
-      </svg>
-    ),
-  };
   console.log(templates);
   return (
     <div className="min-h-screen bg-gray-900">
@@ -342,25 +217,13 @@ const Dashboard = () => {
                   </button>
 
                   {/* User Profile Dropdown */}
-                  <div className="relative">
-                    <motion.button
-                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                      className="flex items-center space-x-2 px-4 py-2 text-white hover:text-gray-300 focus:outline-none"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.2 }}
+                  <div className="relative" ref={userMenuRef}>
+                    <button
+                      onClick={toggleUserMenu}
+                      className="flex items-center focus:outline-none"
                     >
-                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                        {userPhoto ? (
-                          <img
-                            src={userPhoto}
-                            alt={userName}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-white font-medium">
-                            {userName ? userName[0].toUpperCase() : "U"}
-                          </span>
-                        )}
+                      <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white cursor-pointer">
+                        <span className="text-sm font-medium">R</span>
                       </div>
                     </button>
 
@@ -369,10 +232,10 @@ const Dashboard = () => {
                       <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
                         <div className="px-4 py-3 border-b border-gray-700">
                           <p className="text-sm text-white font-medium">
-                            {user?.displayName || "User"}
+                            {sessionStorage.getItem("username")?.replace(/"/g, "") || "User"}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {user?.email || "user@example.com"}
+                            {sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "user@example.com"}
                           </p>
                         </div>
                         
@@ -605,14 +468,10 @@ const Dashboard = () => {
                       <div className="h-16 w-16 mb-4">
                         <img
                           src={
-                            template.widget_list.length > 0 &&
-                            template.widget_list[0].widget_id &&
-                            template.widget_list[0].widget_id.image
-                              ? template.widget_list[0].widget_id.image
-                              : "https://via.placeholder.com/64"
+                            templateImage
                           }
                           alt={template.template_name}
-                          className="w-full h-full rounded-full"
+                          className="w-full h-full rounded-full object-cover"
                         />
                       </div>
                       <h3 className="text-lg font-semibold text-white mb-2">

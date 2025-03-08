@@ -50,11 +50,11 @@ const Enterprise = () => {
     return (
         <MainLayout>
             <section className="flex-1 bg-gray-900">
-                <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <div className="min-h-screen bg-gradient-to-b from-slate-900 dark:to-slate-800">
                     {/* Hero Section */}
                     <div className="pt-20 pb-16 text-center">
                         <motion.h1
-                            className="text-5xl font-bold text-slate-900 dark:text-white mb-6"
+                            className="text-5xl font-bold text-white mb-6"
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
@@ -95,7 +95,7 @@ const Enterprise = () => {
                                 <motion.div
                                     key={feature.title}
                                     variants={itemVariants}
-                                    className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                                    className="bg-slate-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300"
                                 >
                                     <div className="flex items-center mb-4">
                                         <div className="p-2 bg-emerald-500 rounded-lg mr-4">
@@ -113,11 +113,11 @@ const Enterprise = () => {
                                                 />
                                             </svg>
                                         </div>
-                                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                                        <h3 className="text-xl font-semibold text-white">
                                             {feature.title}
                                         </h3>
                                     </div>
-                                    <p className="text-slate-600 dark:text-slate-300">
+                                    <p className="text-slate-300">
                                         {feature.description}
                                     </p>
                                 </motion.div>
