@@ -11,6 +11,9 @@ const Dashboard = () => {
   const { signOutUser } = useContext(AuthContext);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(-1);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Sample template data
   const [templates, setTemplates] = useState([]);
@@ -37,6 +40,42 @@ const Dashboard = () => {
     fetchTemplates();
   }, []);
 
+  const confirmDelete = (template_id) => {
+    setTemplateToDelete(template_id);
+    setShowDeleteModal(true);
+  };
+  const handleDelete = async (template_id) => {
+    try {
+      const response = await fetch(
+        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${template_id}?template_id=${template_id}`,
+        {
+          method: "DELETE",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        console.log(`Template ${template_id} deleted successfully`);
+        setTemplates((prevTemplates) =>
+          prevTemplates.filter(
+            (template) => template.template_id !== template_id
+          )
+        );
+      } else {
+        console.error("Failed to delete the template");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setShowDeleteModal(false);
+    }
+  };
+
+  const closeDropdown = () => {
+    setDropdownOpen(-1);
+  };
   const handleSignOut = () => {
     signOutUser()
       .then(() => {
@@ -238,7 +277,7 @@ const Dashboard = () => {
                             {sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "user@example.com"}
                           </p>
                         </div>
-                        
+
                         <Link
                           to="/profile"
                           className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
@@ -284,9 +323,8 @@ const Dashboard = () => {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-2 hover:bg-gray-700 ${
-                      !notification.read ? "bg-gray-700" : ""
-                    }`}
+                    className={`px-4 py-2 hover:bg-gray-700 ${!notification.read ? "bg-gray-700" : ""
+                      }`}
                   >
                     <div className="flex justify-between">
                       <p className="text-sm text-gray-300">
@@ -309,9 +347,8 @@ const Dashboard = () => {
         <div className="flex">
           {/* Sidebar Navigation */}
           <div
-            className={`${
-              sidebarCollapsed ? "w-16" : "w-64"
-            } min-h-screen bg-gray-800 transition-all duration-300 fixed left-0 z-30 md:relative`}
+            className={`${sidebarCollapsed ? "w-16" : "w-64"
+              } min-h-screen bg-gray-800 transition-all duration-300 fixed left-0 z-30 md:relative`}
           >
             <div className="p-4">
               <div className="space-y-1">
@@ -484,17 +521,52 @@ const Dashboard = () => {
                   </Link>
                   <div className="px-6 py-2 bg-gray-700 border-t border-gray-600 flex justify-between rounded-b-lg">
                     <Link
-                      to={`/template/${template._id}`}
+                      to={`/playground/${template.template_id}`}
                       className="text-xs text-gray-300 hover:text-emerald-400"
                     >
                       Edit
                     </Link>
-                    <button className="text-xs text-gray-300 hover:text-red-400">
+                    <button
+                      className="text-xs text-gray-300 hover:text-red-400"
+                      onClick={() => {
+                        confirmDelete(template.template_id);
+                        closeDropdown();
+                      }}
+                    >
                       Delete
                     </button>
+
                   </div>
                 </div>
               ))}
+              {/* Deletion Confirmation Modal */}
+              {showDeleteModal && (
+                <dialog open className="modal">
+                  <div className="modal-box w-1/4 max-w-sm rounded-lg">
+                    <h2 className="text-2xl mb-6 font-bold text-center">
+                      Confirm Deletion
+                    </h2>
+                    <p className="mb-4">
+                      Are you sure you want to delete this template?
+                    </p>
+                    <div className="flex justify-end mt-6">
+                      <button
+                        className="btn btn-success w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mr-2"
+                        onClick={() => handleDelete(templateToDelete)}
+                      >
+                        Yes, Delete
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCloseModal}
+                        className="btn w-1/2 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </dialog>
+              )}
 
               {/* Add New Template Card */}
               <div
