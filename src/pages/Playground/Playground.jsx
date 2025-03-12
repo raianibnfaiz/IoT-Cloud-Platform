@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
 import WidgetConfigModal from '../Widget/WidgetConfigModal';
+import { API_ENDPOINTS } from '../../config/apiEndpoints';
 
 // Helper function to parse widget configuration from image property
 const parseWidgetConfig = (imageProperty) => {
@@ -156,8 +157,7 @@ const Playground = () => {
     setLoadingTemplate(true);
     try {
       const response = await fetch(
-        // Use the cloud server URL
-        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
+        API_ENDPOINTS.TEMPLATE_DETAILS(templateId),
         {
           method: 'GET',
           headers: {
@@ -281,7 +281,7 @@ const Playground = () => {
   const fetchAvailableWidgets = async () => {
     setLoadingWidgets(true);
     try {
-      const response = await fetch("https://cloud-platform-server-for-bjit.onrender.com/widgets", {
+      const response = await fetch(API_ENDPOINTS.WIDGETS, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -409,7 +409,7 @@ const Playground = () => {
         try {
           const token = sessionStorage.getItem('authToken');
           const response = await fetch(
-            `https://cloud-platform-server-for-bjit.onrender.com/users/templates/virtualPins/${pinId}?template_id=${templateId}`,
+            API_ENDPOINTS.DELETE_VIRTUAL_PIN(pinId, templateId),
             {
               method: 'DELETE',
               headers: {
@@ -558,7 +558,7 @@ const Playground = () => {
   
       // Make API call to update template - ensure we're using the correct ID format
       const response = await fetch(
-        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
+        API_ENDPOINTS.UPDATE_TEMPLATE(templateId),
         {
           method: 'PUT',
           headers: {
