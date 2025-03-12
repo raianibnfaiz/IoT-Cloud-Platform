@@ -1,141 +1,167 @@
 {
-  "type": "3d_gauge",
+  "type": "3d_switch",
   "version": "1.0",
-  "name": "3D Circular Gauge",
+  "name": "Toggle Switch 3D",
   "model": {
-    "source": "gauge_model",
-    "format": "glb",
-    "scale": 1.0,
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    }
+      "source": "switch_model",
+      "format": "glb",
+      "scale": 1,
+      "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+      }
   },
   "appearance": {
-    "colors": {
-      "dial": "#FAFAFA",
-      "needle": "#F44336",
-      "ticks": "#212121",
-      "numbers": "#424242",
-      "range_colors": [
-        "#4CAF50",
-        "#FFEB3B",
-        "#F44336"
-      ]
-    },
-    "materials": {
-      "dial": {
-        "metallic": 0.2,
-        "roughness": 0.4,
-        "reflectivity": 0.3
+      "colors": {
+          "base": "#303F9F",
+          "switch_on": "#4CAF50",
+          "switch_off": "#F44336",
+          "handle": "#E0E0E0"
       },
-      "needle": {
-        "metallic": 0.7,
-        "roughness": 0.2,
-        "reflectivity": 0.5
+      "materials": {
+          "base": {
+              "metallic": 0.2,
+              "roughness": 0.4,
+              "reflectivity": 0.3
+          },
+          "handle": {
+              "metallic": 0.7,
+              "roughness": 0.2,
+              "reflectivity": 0.5
+          }
       },
-      "glass": {
-        "metallic": 0.0,
-        "roughness": 0.1,
-        "reflectivity": 0.8,
-        "transparency": 0.9
+      "lighting": {
+          "ambient": 0.4,
+          "directional": true,
+          "shadows": true
       }
-    },
-    "lighting": {
-      "ambient": 0.4,
-      "directional": true,
-      "shadows": true
-    }
   },
   "animation": {
-    "needle_movement": {
-      "duration": 800,
-      "easing": "easeOutElastic",
-      "overshoot": 0.5
-    },
-    "value_change": {
-      "duration": 300,
-      "easing": "easeOutCubic",
-      "digital_display": "count"
-    },
-    "warning": {
-      "pulse": {
-        "color": "#F44336",
-        "duration": 500,
-        "count": 3
+      "toggle": {
+          "duration": 300,
+          "easing": "easeInOutQuad",
+          "keyframes": [
+              {
+                  "position": 0,
+                  "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                  }
+              },
+              {
+                  "position": 1,
+                  "rotation": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 45
+                  }
+              }
+          ]
+      },
+      "hover": {
+          "scale": 1.05,
+          "duration": 200,
+          "easing": "easeOutCubic"
       }
-    }
   },
   "interaction": {
-    "tap": {
-      "action": "show_details",
-      "haptic_feedback": "light"
-    },
-    "long_press": {
-      "enabled": true,
-      "duration": 800,
-      "action": "reset"
-    }
+      "tap": {
+          "action": "toggle",
+          "haptic_feedback": "medium",
+          "sound": "click.mp3"
+      },
+      "drag": {
+          "enabled": true,
+          "axis": "z",
+          "threshold": 0.2,
+          "snap_points": [
+              0,
+              1
+          ]
+      },
+      "long_press": {
+          "enabled": true,
+          "duration": 500,
+          "action": "settings"
+      }
   },
   "physics": {
-    "enabled": true,
-    "needle": {
-      "damping": 15,
-      "stiffness": 90,
-      "mass": 1
-    }
+      "enabled": true,
+      "spring": {
+          "stiffness": 100,
+          "damping": 10,
+          "mass": 1
+      },
+      "collision": {
+          "enabled": true,
+          "bounds": {
+              "width": 1.2,
+              "height": 1.2,
+              "depth": 1.2
+          }
+      }
   },
   "feedback": {
-    "visual": {
-      "threshold_cross": {
-        "flash": "auto",
-        "duration": 300
+      "visual": {
+          "on_state": {
+              "glow": {
+                  "color": "#4CAF50",
+                  "intensity": 0.7,
+                  "radius": 1.2
+              }
+          },
+          "off_state": {
+              "glow": {
+                  "color": "#F44336",
+                  "intensity": 0.3,
+                  "radius": 0.8
+              }
+          }
       },
-      "digital_display": {
-        "show": true,
-        "position": "center",
-        "format": "decimal"
+      "haptic": {
+          "on_toggle": "medium",
+          "on_error": "error"
+      },
+      "sound": {
+          "on_toggle": "switch_click.mp3",
+          "on_error": "error_beep.mp3"
       }
-    },
-    "haptic": {
-      "on_threshold": "medium",
-      "on_max": "heavy"
-    },
-    "sound": {
-      "on_threshold": "alert.mp3",
-      "on_max": "max_alert.mp3"
-    }
   },
   "state": {
-    "default_value": 0,
-    "min_value": 0,
-    "max_value": 100,
-    "thresholds": [
-      {
-        "value": 30,
-        "color": "#4CAF50"
+      "default": "off",
+      "persistence": true,
+      "transitions": {
+          "on_to_off": {
+              "animation": "toggle_reverse",
+              "duration": 300
+          },
+          "off_to_on": {
+              "animation": "toggle",
+              "duration": 300
+          }
       },
-      {
-        "value": 70,
-        "color": "#FFEB3B"
-      },
-      {
-        "value": 100,
-        "color": "#F44336"
-      }
-    ]
+      "min_value": 0,
+      "max_value": 100,
+      "default_value": 50
   },
   "accessibility": {
-    "label": "Gauge Display",
-    "hints": "Shows current value on a dial",
-    "announce_thresholds": true
+      "label": "Power Switch",
+      "hints": "Tap to toggle power",
+      "high_contrast": true
   },
   "rendering": {
-    "quality": "high",
-    "antialiasing": true,
-    "shadows": true,
-    "reflections": true,
-    "glass_effect": true
+      "quality": "high",
+      "antialiasing": true,
+      "shadows": true,
+      "reflections": true,
+      "performance_mode": {
+          "enabled": true,
+          "threshold": "low_battery"
+      }
+  },
+  "pinConfig": {
+      "id": "67caaa365d961cad11071503"
   }
 }

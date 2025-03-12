@@ -72,29 +72,29 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
         setCurrentValue(widgetConfig.state.default_value || 50);
       }
       
-      // If there's already a pin set in the config, select it
-      if (widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id) {
-        setSelectedPin(widgetConfig.pinConfig.id);
-      }
-      
       // Load virtual pins from the current template
       const loadPins = async () => {
         setLoading(true);
         const pins = await fetchTemplateVirtualPins(templateId);
         setVirtualPins(pins);
         
-        // Auto-select the smallest numbered available pin if no pin is already selected
-        if (!widgetConfig?.pinConfig?.id) {
+        // If widget already has a pin configured, select that pin
+        if (widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id) {
+          console.log("Setting pin from existing config:", widgetConfig.pinConfig.id);
+          setSelectedPin(widgetConfig.pinConfig.id);
+        } else {
+          // For new widgets, find the smallest available pin number
           const availablePins = pins.filter(pin => !pin.is_used);
           if (availablePins.length > 0) {
-            // Sort by pin_id numerically and select the smallest one
             const sortedPins = [...availablePins].sort((a, b) => {
               return parseInt(a.pin_id) - parseInt(b.pin_id);
             });
+            console.log("Auto-selecting smallest pin:", sortedPins[0]._id);
             setSelectedPin(sortedPins[0]._id || sortedPins[0].pin_id);
+          } else {
+            console.log("No available pins found");
+            setSelectedPin('');
           }
-        }else{
-          setSelectedPin(widgetConfig?.pinConfig?.id);
         }
         
         setLoading(false);
@@ -186,7 +186,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
         console.error('Error updating virtual pin:', error);
       }
     }
-    
+    console.log('Updated Config:', updatedConfig);
     // Call onSave with the updated widget
     onSave({
       ...widget,

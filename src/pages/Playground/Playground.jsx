@@ -368,16 +368,68 @@ const Playground = () => {
     setGridPattern(createGridPattern());
   };
 
-  const handleDeleteComponent = (instanceId) => {
+  const handleDeleteComponent = async (instanceId) => {
+    console.log('Deleting component widget:', instanceId);
+    
+    // Find the component to get its pinConfig
+    const componentToDelete = components.find(c => c.instanceId === instanceId);
+    
+    if (componentToDelete) {
+      // Check if the component has a pinConfig with an id
+      let pinId = null;
+      
+      // Extract pinConfig from image if it's a string
+      if (typeof componentToDelete.image === 'string') {
+        try {
+          const parsedConfig = JSON.parse(componentToDelete.image);
+          if (parsedConfig.pinConfig && parsedConfig.pinConfig.id) {
+            pinId = parsedConfig.pinConfig.id;
+          }
+        } catch (error) {
+          console.error('Error parsing widget configuration for pin ID:', error);
+        }
+      } 
+      // If the image is already an object
+      else if (componentToDelete.image && componentToDelete.image.pinConfig) {
+        pinId = componentToDelete.image.pinConfig.id;
+      }
+      
+      // If we found a valid pin ID and have a template ID, delete the virtual pin
+      if (pinId && templateId) {
+        try {
+          const token = sessionStorage.getItem('authToken');
+          const response = await fetch(
+            `https://cloud-platform-server-for-bjit.onrender.com/users/templates/virtualPins/${pinId}?template_id=${templateId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'accept': '*/*',
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          if (response.ok) {
+            console.log(`Successfully deleted virtual pin with ID: ${pinId}`);
+          } else {
+            console.error('Failed to delete virtual pin:', await response.text());
+          }
+        } catch (error) {
+          console.error('Error deleting virtual pin:', error);
+        }
+      }
+    }
+    
+    // Remove component from state
     setComponents(components.filter((c) => c.instanceId !== instanceId));
-
+  
     // Remove from widget states
     setWidgetStates((prevStates) => {
       const newStates = { ...prevStates };
       delete newStates[instanceId];
       return newStates;
     });
-
+  
     // Update grid pattern after component is removed
     setTimeout(() => setGridPattern(createGridPattern()), 50);
   };
@@ -405,48 +457,37 @@ const Playground = () => {
   };
 
   const handleConfigClick = (widget) => {
-    setSelectedWidget(widget);
+    // Ensure we have the latest pin configuration from the template
+    const widgetWithPinConfig = {...widget};
+    
+    // If the widget has image data as a string, parse it to extract pinConfig
+    if (typeof widget.image === 'string') {
+      try {
+        const parsedConfig = JSON.parse(widget.image);
+        if (parsedConfig.pinConfig) {
+          widgetWithPinConfig.pinConfig = parsedConfig.pinConfig;
+        }
+      } catch (error) {
+        console.error('Error parsing widget configuration:', error);
+      }
+    } 
+    // If the image is already an object, check for pinConfig
+    else if (widget.image && widget.image.pinConfig) {
+      widgetWithPinConfig.pinConfig = widget.image.pinConfig;
+    }
+    
+    console.log("Opening config for widget with pin data:", widgetWithPinConfig);
+    setSelectedWidget(widgetWithPinConfig);
     setConfigModalOpen(true);
   };
 
-  const handleSaveConfig = (instanceId, newConfig) => {
+  const handleSaveConfig = (updatedWidget) => {
     // Update the component with the new configuration
     setComponents(components.map(component => {
-      if (component.instanceId === instanceId) {
-        // Create a new image property with the updated configuration
-        let updatedImage;
-
-        try {
-          // If the image is already an object, update it
-          if (typeof component.image === 'object') {
-            updatedImage = {
-              ...component.image,
-              name: newConfig.name,
-              appearance: newConfig.appearance,
-              state: newConfig.state,
-              animation: newConfig.animation
-            };
-          }
-          // If the image is a string, parse it first
-          else if (typeof component.image === 'string') {
-            const parsedImage = JSON.parse(component.image);
-            updatedImage = {
-              ...parsedImage,
-              name: newConfig.name,
-              appearance: newConfig.appearance,
-              state: newConfig.state,
-              animation: newConfig.animation
-            };
-          }
-        } catch (error) {
-          console.error('Failed to update widget configuration:', error);
-          updatedImage = component.image;
-        }
-
+      if (component.instanceId === updatedWidget.instanceId) {
         return {
           ...component,
-          name: newConfig.name,
-          image: updatedImage
+          ...updatedWidget
         };
       }
       return component;
