@@ -470,7 +470,7 @@ const Playground = () => {
     // Ensure we have the latest pin configuration from the template
     const widgetWithPinConfig = {...widget};
     let hasPinConfigId = false;
-    
+    console.log("Checking widget with pin data:", widget);
     // If the widget has image data as a string, parse it to extract pinConfig
     if (typeof widget.image === 'string') {
       try {
@@ -527,28 +527,88 @@ const Playground = () => {
     setSelectedWidget(null);
   };
 
-  const handleExportPlayground = () => {
-    const exportData = {
-      components: components.map(component => {
-        const config = parseWidgetConfig(component);
+  const handleExportPlayground = async () => {
+    // Show loading indicator or disable button here if needed
+    try {
+      // Prepare widget list for API
+      const widgetList = components.map(component => {
+        const config = parseWidgetConfig(component.image);
+        let pinConfigId = null;
+  
+        // Extract pinConfig.id from component configuration
+        if (config && config.pinConfig && config.pinConfig.id) {
+          pinConfigId = config.pinConfig.id;
+        }
+      console.log("Checking Widget ID",component)
+        // Fix: Format widget_id correctly and ensure all fields match API expectations
         return {
-          id: component._id || component.id,
-          name: component.name,
-          type: config?.type || component.type,
-          position: component.position,
-          state: widgetStates[component.instanceId],
-          configuration: config
+          widget_id: component._id || component.id,
+          pinConfig: pinConfigId ? [pinConfigId] : [],
+          position: component.position || { x: 0, y: 0 }
         };
-      }),
-      timestamp: new Date().toISOString()
-    };
-
-    // Create a downloadable JSON file
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `playground_export_${new Date().toISOString().replace(/:/g, '-')}.json`;
-    link.click();
+      });
+  
+      // Prepare request payload - fix the format to exactly match API expectations
+      const updateData = {
+        template_name: templateDetails?.template?.template_name || "Unnamed Template",
+        widget_list: widgetList
+      };
+  
+      console.log("Saving template with payload:", updateData.widget_list);
+  
+      // Make API call to update template - ensure we're using the correct ID format
+      const response = await fetch(
+        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        }
+      );
+  
+      // If we get an error, log the full response text for debugging
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API Error Response:", errorText);
+        throw new Error(`Failed to save template: ${errorText}`);
+      }
+  
+      const result = await response.json();
+      console.log("Template saved successfully:", result);
+      
+      // Show success message to user
+      alert("Template saved successfully!");
+  
+      // Optional: Also download a local JSON copy
+      const exportData = {
+        components: components.map(component => {
+          const config = parseWidgetConfig(component.image);
+          return {
+            id: component._id || component.id,
+            name: component.name,
+            type: config?.type || component.type,
+            position: component.position,
+            state: widgetStates[component.instanceId],
+            configuration: config
+          };
+        }),
+        timestamp: new Date().toISOString()
+      };
+  
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `playground_export_${new Date().toISOString().replace(/:/g, '-')}.json`;
+      link.click();
+      
+    } catch (error) {
+      console.error("Error saving template:", error);
+      alert(`Failed to save template: ${error.message}`);
+    }
   };
 
   const createGridPattern = () => {

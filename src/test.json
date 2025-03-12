@@ -1,167 +1,58 @@
-{
-  "type": "3d_switch",
-  "version": "1.0",
-  "name": "Toggle Switch 3D",
-  "model": {
-      "source": "switch_model",
-      "format": "glb",
-      "scale": 1,
-      "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-      }
-  },
-  "appearance": {
-      "colors": {
-          "base": "#303F9F",
-          "switch_on": "#4CAF50",
-          "switch_off": "#F44336",
-          "handle": "#E0E0E0"
-      },
-      "materials": {
-          "base": {
-              "metallic": 0.2,
-              "roughness": 0.4,
-              "reflectivity": 0.3
-          },
-          "handle": {
-              "metallic": 0.7,
-              "roughness": 0.2,
-              "reflectivity": 0.5
-          }
-      },
-      "lighting": {
-          "ambient": 0.4,
-          "directional": true,
-          "shadows": true
-      }
-  },
-  "animation": {
-      "toggle": {
-          "duration": 300,
-          "easing": "easeInOutQuad",
-          "keyframes": [
-              {
-                  "position": 0,
-                  "rotation": {
-                      "x": 0,
-                      "y": 0,
-                      "z": 0
-                  }
-              },
-              {
-                  "position": 1,
-                  "rotation": {
-                      "x": 0,
-                      "y": 0,
-                      "z": 45
-                  }
-              }
-          ]
-      },
-      "hover": {
-          "scale": 1.05,
-          "duration": 200,
-          "easing": "easeOutCubic"
-      }
-  },
-  "interaction": {
-      "tap": {
-          "action": "toggle",
-          "haptic_feedback": "medium",
-          "sound": "click.mp3"
-      },
-      "drag": {
-          "enabled": true,
-          "axis": "z",
-          "threshold": 0.2,
-          "snap_points": [
-              0,
-              1
-          ]
-      },
-      "long_press": {
-          "enabled": true,
-          "duration": 500,
-          "action": "settings"
-      }
-  },
-  "physics": {
-      "enabled": true,
-      "spring": {
-          "stiffness": 100,
-          "damping": 10,
-          "mass": 1
-      },
-      "collision": {
-          "enabled": true,
-          "bounds": {
-              "width": 1.2,
-              "height": 1.2,
-              "depth": 1.2
-          }
-      }
-  },
-  "feedback": {
-      "visual": {
-          "on_state": {
-              "glow": {
-                  "color": "#4CAF50",
-                  "intensity": 0.7,
-                  "radius": 1.2
-              }
-          },
-          "off_state": {
-              "glow": {
-                  "color": "#F44336",
-                  "intensity": 0.3,
-                  "radius": 0.8
-              }
-          }
-      },
-      "haptic": {
-          "on_toggle": "medium",
-          "on_error": "error"
-      },
-      "sound": {
-          "on_toggle": "switch_click.mp3",
-          "on_error": "error_beep.mp3"
-      }
-  },
-  "state": {
-      "default": "off",
-      "persistence": true,
-      "transitions": {
-          "on_to_off": {
-              "animation": "toggle_reverse",
-              "duration": 300
-          },
-          "off_to_on": {
-              "animation": "toggle",
-              "duration": 300
-          }
-      },
-      "min_value": 0,
-      "max_value": 100,
-      "default_value": 50
-  },
-  "accessibility": {
-      "label": "Power Switch",
-      "hints": "Tap to toggle power",
-      "high_contrast": true
-  },
-  "rendering": {
-      "quality": "high",
-      "antialiasing": true,
-      "shadows": true,
-      "reflections": true,
-      "performance_mode": {
-          "enabled": true,
-          "threshold": "low_battery"
-      }
-  },
-  "pinConfig": {
-      "id": "67caaa365d961cad11071503"
-  }
-}
+[
+    {
+      "_id": "67c5add97bc03a105c0b9afe",
+      "name": "Switch",
+      "image": "{\"type\":\"3d_switch\",\"version\":\"1.0\",\"name\":\"Toggle Switch 3D\",\"model\":{\"source\":\"switch_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"base\":\"#303F9F\",\"switch_on\":\"#4CAF50\",\"switch_off\":\"#F44336\",\"handle\":\"#E0E0E0\"},\"materials\":{\"base\":{\"metallic\":0.2,\"roughness\":0.4,\"reflectivity\":0.3},\"handle\":{\"metallic\":0.7,\"roughness\":0.2,\"reflectivity\":0.5}},\"lighting\":{\"ambient\":0.4,\"directional\":true,\"shadows\":true}},\"animation\":{\"toggle\":{\"duration\":300,\"easing\":\"easeInOutQuad\",\"keyframes\":[{\"position\":0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},{\"position\":1,\"rotation\":{\"x\":0,\"y\":0,\"z\":45}}]},\"hover\":{\"scale\":1.05,\"duration\":200,\"easing\":\"easeOutCubic\"}},\"interaction\":{\"tap\":{\"action\":\"toggle\",\"haptic_feedback\":\"medium\",\"sound\":\"click.mp3\"},\"drag\":{\"enabled\":true,\"axis\":\"z\",\"threshold\":0.2,\"snap_points\":[0,1]},\"long_press\":{\"enabled\":true,\"duration\":500,\"action\":\"settings\"}},\"physics\":{\"enabled\":true,\"spring\":{\"stiffness\":100,\"damping\":10,\"mass\":1},\"collision\":{\"enabled\":true,\"bounds\":{\"width\":1.2,\"height\":1.2,\"depth\":1.2}}},\"feedback\":{\"visual\":{\"on_state\":{\"glow\":{\"color\":\"#4CAF50\",\"intensity\":0.7,\"radius\":1.2}},\"off_state\":{\"glow\":{\"color\":\"#F44336\",\"intensity\":0.3,\"radius\":0.8}}},\"haptic\":{\"on_toggle\":\"medium\",\"on_error\":\"error\"},\"sound\":{\"on_toggle\":\"switch_click.mp3\",\"on_error\":\"error_beep.mp3\"}},\"state\":{\"default\":\"off\",\"persistence\":true,\"transitions\":{\"on_to_off\":{\"animation\":\"toggle_reverse\",\"duration\":300},\"off_to_on\":{\"animation\":\"toggle\",\"duration\":300}}},\"accessibility\":{\"label\":\"Power Switch\",\"hints\":\"Tap to toggle power\",\"high_contrast\":true},\"rendering\":{\"quality\":\"high\",\"antialiasing\":true,\"shadows\":true,\"reflections\":true,\"performance_mode\":{\"enabled\":true,\"threshold\":\"low_battery\"}}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e56b64d67322c83b479f",
+      "name": "Slider",
+      "image": "{\"type\":\"3d_slider\",\"version\":\"1.0\",\"name\":\"Interactive Slider\",\"model\":{\"source\":\"slider_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"track\":\"#E0E0E0\",\"handle\":\"#2196F3\",\"active_track\":\"#BBDEFB\",\"markers\":\"#757575\"},\"materials\":{\"track\":{\"metallic\":0.1,\"roughness\":0.5,\"reflectivity\":0.2},\"handle\":{\"metallic\":0.6,\"roughness\":0.3,\"reflectivity\":0.4}},\"lighting\":{\"ambient\":0.5,\"directional\":true,\"shadows\":true}},\"animation\":{\"slide\":{\"duration\":150,\"easing\":\"easeOutCubic\"},\"hover\":{\"scale\":1.1,\"duration\":200,\"easing\":\"easeOutQuad\"},\"value_change\":{\"duration\":300,\"easing\":\"easeInOutQuad\"}},\"interaction\":{\"drag\":{\"axis\":\"x\",\"snap_points\":[0,25,50,75,100],\"snap_threshold\":5},\"tap\":{\"action\":\"jump_to_position\",\"haptic_feedback\":\"light\"},\"double_tap\":{\"action\":\"reset\",\"haptic_feedback\":\"medium\"}},\"physics\":{\"enabled\":true,\"friction\":0.3,\"spring\":{\"stiffness\":80,\"damping\":12,\"mass\":1}},\"feedback\":{\"visual\":{\"track_fill\":{\"color\":\"#2196F3\",\"animation\":\"fill\"},\"value_display\":{\"show\":true,\"position\":\"above\",\"format\":\"percentage\"}},\"haptic\":{\"on_drag\":\"light\",\"on_snap\":\"medium\"},\"sound\":{\"on_drag\":\"slide_tick.mp3\",\"on_snap\":\"click.mp3\"}},\"state\":{\"default_value\":50,\"min_value\":0,\"max_value\":100,\"step\":1,\"continuous\":true},\"accessibility\":{\"label\":\"Slider Control\",\"hints\":\"Drag to adjust value\",\"increment_actions\":{\"small\":1,\"medium\":5,\"large\":10}},\"rendering\":{\"quality\":\"high\",\"antialiasing\":true,\"shadows\":true,\"reflections\":true}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e56c64d67322c83b47a1",
+      "name": "Number Input",
+      "image": "{\"type\":\"3d_number_input\",\"version\":\"1.0\",\"name\":\"3D Number Input\",\"model\":{\"source\":\"number_input_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"background\":\"#FFFFFF\",\"text\":\"#212121\",\"buttons\":\"#2196F3\",\"border\":\"#BDBDBD\"},\"materials\":{\"display\":{\"metallic\":0.1,\"roughness\":0.3,\"reflectivity\":0.5,\"transparency\":0.9},\"buttons\":{\"metallic\":0.4,\"roughness\":0.2,\"reflectivity\":0.3}},\"lighting\":{\"ambient\":0.6,\"directional\":true,\"glow\":true}},\"animation\":{\"button_press\":{\"duration\":100,\"scale\":0.9,\"easing\":\"easeInOutQuad\"},\"value_change\":{\"duration\":200,\"easing\":\"easeOutCubic\",\"effects\":[\"pulse\",\"glow\"]},\"focus\":{\"duration\":300,\"border_color\":\"#2196F3\",\"glow_intensity\":0.5}},\"interaction\":{\"buttons\":{\"increment\":{\"position\":\"right\",\"repeat_rate\":200},\"decrement\":{\"position\":\"left\",\"repeat_rate\":200}},\"direct_input\":{\"enabled\":true,\"keyboard_type\":\"numeric\"},\"long_press\":{\"action\":\"accelerate\",\"acceleration_rate\":1.5}},\"physics\":{\"enabled\":true,\"button_press\":{\"stiffness\":120,\"damping\":8}},\"feedback\":{\"visual\":{\"value_change\":{\"flash\":\"#E3F2FD\",\"duration\":200},\"error\":{\"flash\":\"#FFCDD2\",\"shake\":true}},\"haptic\":{\"on_button\":\"light\",\"on_error\":\"error\"},\"sound\":{\"on_button\":\"click.mp3\",\"on_error\":\"error_beep.mp3\"}},\"state\":{\"default_value\":0,\"min_value\":-100,\"max_value\":100,\"step\":1,\"decimal_places\":0},\"accessibility\":{\"label\":\"Number Input\",\"hints\":\"Enter a number or use buttons to adjust\",\"announce_changes\":true},\"rendering\":{\"quality\":\"high\",\"text_rendering\":\"sdf\",\"antialiasing\":true}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e56d64d67322c83b47a3",
+      "name": "Text Input",
+      "image": "{\"type\":\"3d_text_input\",\"version\":\"1.0\",\"name\":\"3D Text Field\",\"model\":{\"source\":\"text_input_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"background\":\"#FFFFFF\",\"text\":\"#212121\",\"placeholder\":\"#9E9E9E\",\"border\":\"#BDBDBD\",\"cursor\":\"#2196F3\"},\"materials\":{\"field\":{\"metallic\":0.1,\"roughness\":0.4,\"reflectivity\":0.3,\"transparency\":0.95},\"border\":{\"metallic\":0.3,\"roughness\":0.3,\"reflectivity\":0.2}},\"lighting\":{\"ambient\":0.7,\"directional\":true,\"glow\":true}},\"animation\":{\"focus\":{\"duration\":300,\"border_color\":\"#2196F3\",\"border_width\":2,\"glow\":{\"color\":\"#BBDEFB\",\"intensity\":0.4,\"radius\":1.2}},\"typing\":{\"cursor_blink_rate\":530,\"character_appear\":\"fade\"},\"error\":{\"duration\":300,\"border_color\":\"#F44336\",\"shake\":{\"intensity\":5,\"duration\":300}}},\"interaction\":{\"touch\":{\"action\":\"focus\",\"haptic_feedback\":\"light\"},\"keyboard\":{\"type\":\"standard\",\"auto_capitalize\":true,\"auto_correct\":true,\"spell_check\":true},\"selection\":{\"enabled\":true,\"handles\":true}},\"physics\":{\"enabled\":false},\"feedback\":{\"visual\":{\"on_focus\":{\"animation\":\"expand\",\"duration\":200},\"on_error\":{\"border_flash\":\"#F44336\",\"shake\":true}},\"haptic\":{\"on_focus\":\"light\",\"on_error\":\"error\"},\"sound\":{\"on_focus\":\"focus.mp3\",\"on_type\":\"key_press.mp3\",\"on_error\":\"error_beep.mp3\"}},\"state\":{\"default_text\":\"\",\"placeholder\":\"Enter text...\",\"max_length\":100,\"multiline\":false},\"accessibility\":{\"label\":\"Text Input Field\",\"hints\":\"Tap to enter text\",\"announce_changes\":true},\"rendering\":{\"quality\":\"high\",\"text_rendering\":\"sdf\",\"antialiasing\":true,\"cursor_animation\":true}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e56e64d67322c83b47a5",
+      "name": "Toggle Button",
+      "image": "{\"type\":\"3d_toggle_button\",\"version\":\"1.0\",\"name\":\"3D Toggle Button\",\"model\":{\"source\":\"toggle_button_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"active\":\"#4CAF50\",\"inactive\":\"#F44336\",\"background\":\"#E0E0E0\",\"text\":\"#FFFFFF\"},\"materials\":{\"button\":{\"metallic\":0.4,\"roughness\":0.3,\"reflectivity\":0.4},\"text\":{\"metallic\":0.0,\"roughness\":0.5,\"reflectivity\":0.1}},\"lighting\":{\"ambient\":0.5,\"directional\":true,\"shadows\":true}},\"animation\":{\"press\":{\"duration\":150,\"scale\":0.95,\"easing\":\"easeOutQuad\"},\"toggle\":{\"duration\":300,\"easing\":\"easeInOutQuad\",\"rotation\":{\"axis\":\"y\",\"angle\":180}},\"hover\":{\"scale\":1.05,\"duration\":200,\"glow\":{\"color\":\"auto\",\"intensity\":0.3}}},\"interaction\":{\"tap\":{\"action\":\"toggle\",\"haptic_feedback\":\"medium\"},\"long_press\":{\"enabled\":true,\"duration\":800,\"action\":\"reset\"}},\"physics\":{\"enabled\":true,\"spring\":{\"stiffness\":100,\"damping\":10,\"mass\":1}},\"feedback\":{\"visual\":{\"on_toggle\":{\"flash\":\"auto\",\"duration\":200},\"state_indicator\":{\"position\":\"top-right\",\"type\":\"icon\"}},\"haptic\":{\"on_toggle\":\"medium\",\"on_error\":\"error\"},\"sound\":{\"on_toggle\":\"toggle_click.mp3\",\"on_error\":\"error_beep.mp3\"}},\"state\":{\"default\":false,\"labels\":{\"on\":\"ON\",\"off\":\"OFF\"},\"icon\":{\"on\":\"check_circle\",\"off\":\"cancel\"}},\"accessibility\":{\"label\":\"Toggle Button\",\"hints\":\"Tap to toggle state\",\"announce_state\":true},\"rendering\":{\"quality\":\"high\",\"antialiasing\":true,\"shadows\":true,\"reflections\":true}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e56f64d67322c83b47a7",
+      "name": "Gauge",
+      "image": "{\"type\":\"3d_gauge\",\"version\":\"1.0\",\"name\":\"3D Circular Gauge\",\"model\":{\"source\":\"gauge_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"dial\":\"#FAFAFA\",\"needle\":\"#F44336\",\"ticks\":\"#212121\",\"numbers\":\"#424242\",\"range_colors\":[\"#4CAF50\",\"#FFEB3B\",\"#F44336\"]},\"materials\":{\"dial\":{\"metallic\":0.2,\"roughness\":0.4,\"reflectivity\":0.3},\"needle\":{\"metallic\":0.7,\"roughness\":0.2,\"reflectivity\":0.5},\"glass\":{\"metallic\":0.0,\"roughness\":0.1,\"reflectivity\":0.8,\"transparency\":0.9}},\"lighting\":{\"ambient\":0.4,\"directional\":true,\"shadows\":true}},\"animation\":{\"needle_movement\":{\"duration\":800,\"easing\":\"easeOutElastic\",\"overshoot\":0.5},\"value_change\":{\"duration\":300,\"easing\":\"easeOutCubic\",\"digital_display\":\"count\"},\"warning\":{\"pulse\":{\"color\":\"#F44336\",\"duration\":500,\"count\":3}}},\"interaction\":{\"tap\":{\"action\":\"show_details\",\"haptic_feedback\":\"light\"},\"long_press\":{\"enabled\":true,\"duration\":800,\"action\":\"reset\"}},\"physics\":{\"enabled\":true,\"needle\":{\"damping\":15,\"stiffness\":90,\"mass\":1}},\"feedback\":{\"visual\":{\"threshold_cross\":{\"flash\":\"auto\",\"duration\":300},\"digital_display\":{\"show\":true,\"position\":\"center\",\"format\":\"decimal\"}},\"haptic\":{\"on_threshold\":\"medium\",\"on_max\":\"heavy\"},\"sound\":{\"on_threshold\":\"alert.mp3\",\"on_max\":\"max_alert.mp3\"}},\"state\":{\"default_value\":0,\"min_value\":0,\"max_value\":100,\"thresholds\":[{\"value\":30,\"color\":\"#4CAF50\"},{\"value\":70,\"color\":\"#FFEB3B\"},{\"value\":100,\"color\":\"#F44336\"}]},\"accessibility\":{\"label\":\"Gauge Display\",\"hints\":\"Shows current value on a dial\",\"announce_thresholds\":true},\"rendering\":{\"quality\":\"high\",\"antialiasing\":true,\"shadows\":true,\"reflections\":true,\"glass_effect\":true}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e57064d67322c83b47a9",
+      "name": "Button",
+      "image": "{\"type\":\"3d_button\",\"version\":\"1.0\",\"name\":\"3D Push Button\",\"model\":{\"source\":\"button_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"button\":\"#2196F3\",\"text\":\"#FFFFFF\",\"highlight\":\"#64B5F6\",\"shadow\":\"#1976D2\"},\"materials\":{\"body\":{\"metallic\":0.3,\"roughness\":0.4,\"reflectivity\":0.3},\"text\":{\"metallic\":0.0,\"roughness\":0.5,\"reflectivity\":0.1}},\"lighting\":{\"ambient\":0.5,\"directional\":true,\"shadows\":true}},\"animation\":{\"press\":{\"duration\":150,\"depth\":0.2,\"easing\":\"easeOutQuad\"},\"release\":{\"duration\":300,\"easing\":\"easeOutElastic\",\"overshoot\":0.2},\"hover\":{\"scale\":1.05,\"duration\":200,\"glow\":{\"color\":\"#BBDEFB\",\"intensity\":0.4}}},\"interaction\":{\"tap\":{\"action\":\"press\",\"haptic_feedback\":\"medium\"},\"double_tap\":{\"enabled\":true,\"action\":\"special\"},\"long_press\":{\"enabled\":true,\"duration\":800,\"action\":\"alternate\"}},\"physics\":{\"enabled\":true,\"spring\":{\"stiffness\":120,\"damping\":8,\"mass\":1}},\"feedback\":{\"visual\":{\"on_press\":{\"flash\":\"#BBDEFB\",\"duration\":100},\"on_release\":{\"ripple\":{\"color\":\"#FFFFFF\",\"opacity\":0.3,\"speed\":0.5}}},\"haptic\":{\"on_press\":\"medium\",\"on_release\":\"light\"},\"sound\":{\"on_press\":\"button_down.mp3\",\"on_release\":\"button_up.mp3\"}},\"state\":{\"label\":\"PRESS\",\"icon\":\"touch_app\",\"disabled\":false},\"accessibility\":{\"label\":\"Push Button\",\"hints\":\"Press to activate\",\"announce_press\":true},\"rendering\":{\"quality\":\"high\",\"antialiasing\":true,\"shadows\":true,\"reflections\":true}}",
+      "pinRequired": 1,
+      "__v": 0
+    },
+    {
+      "_id": "67c6e57164d67322c83b47ab",
+      "name": "Color Picker",
+      "image": "{\"type\":\"3d_color_picker\",\"version\":\"1.0\",\"name\":\"3D Color Selector\",\"model\":{\"source\":\"color_picker_model\",\"format\":\"glb\",\"scale\":1.0,\"rotation\":{\"x\":0,\"y\":0,\"z\":0}},\"appearance\":{\"colors\":{\"background\":\"#FFFFFF\",\"border\":\"#BDBDBD\",\"handles\":\"#212121\",\"selected_color_display\":\"dynamic\"},\"materials\":{\"wheel\":{\"metallic\":0.1,\"roughness\":0.3,\"reflectivity\":0.4},\"handles\":{\"metallic\":0.5,\"roughness\":0.2,\"reflectivity\":0.5},\"display\":{\"metallic\":0.2,\"roughness\":0.3,\"reflectivity\":0.6}},\"lighting\":{\"ambient\":0.6,\"directional\":true,\"glow\":true}},\"animation\":{\"wheel_rotation\":{\"duration\":300,\"easing\":\"easeOutCubic\"},\"handle_drag\":{\"duration\":100,\"easing\":\"linear\"},\"color_change\":{\"duration\":200,\"easing\":\"easeOutQuad\",\"transition\":\"smooth\"}},\"interaction\":{\"wheel\":{\"drag\":{\"action\":\"rotate\",\"haptic_feedback\":\"light\"},\"tap\":{\"action\":\"select_color\",\"haptic_feedback\":\"light\"}},\"saturation_value\":{\"drag\":{\"action\":\"adjust\",\"haptic_feedback\":\"light\"}},\"presets\":{\"enabled\":true,\"position\":\"bottom\",\"colors\":[\"#F44336\",\"#2196F3\",\"#4CAF50\",\"#FFEB3B\",\"#9C27B0\",\"#FF9800\"]}},\"physics\":{\"enabled\":true,\"wheel\":{\"inertia\":true,\"friction\":0.95},\"handles\":{\"spring\":{\"stiffness\":100,\"damping\":10}}},\"feedback\":{\"visual\":{\"on_select\":{\"pulse\":\"auto\",\"duration\":200},\"color_preview\":{\"position\":\"center\",\"size\":\"large\"}},\"haptic\":{\"on_select\":\"light\",\"on_preset\":\"medium\"},\"sound\":{\"on_select\":\"select.mp3\",\"on_preset\":\"preset_select.mp3\"}},\"state\":{\"default_color\":\"#2196F3\",\"color_model\":\"hsv\",\"history\":{\"enabled\":true,\"max_entries\":10}},\"accessibility\":{\"label\":\"Color Picker\",\"hints\":\"Drag to select color\",\"announce_colors\":true},\"rendering\":{\"quality\":\"high\",\"antialiasing\":true,\"color_interpolation\":\"smooth\"}}",
+      "pinRequired": 3,
+      "__v": 0
+    }
+  ]
