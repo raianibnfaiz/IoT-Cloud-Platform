@@ -3,6 +3,8 @@ import AuthContext from "../../context/AuthContext/AuthContext";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import templateImage from "../../assets/image/template.jpeg";
+import { motion } from "framer-motion";
+import { Timer } from "three/examples/jsm/Addons.js";
 
 const Dashboard = () => {
   const token = sessionStorage.getItem("authToken");
@@ -14,6 +16,7 @@ const Dashboard = () => {
   const [dropdownOpen, setDropdownOpen] = useState(-1);
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Sample template data
   const [templates, setTemplates] = useState([]);
@@ -31,8 +34,10 @@ const Dashboard = () => {
         }
       );
       setTemplates(response.data);
+      setIsLoading(false);
     } catch (err) {
       console.error("Error fetching templates:", err);
+      setIsLoading(false);
     }
   };
 
@@ -490,110 +495,127 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Template Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredTemplates.map((template) => (
-                <div
-                  key={template._id}
-                  className="bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  <Link
-                    to={`/template/${template.template_id}`}
-                    className="block p-6"
-                  >
-                    <div className="flex flex-col items-center">
-                      <div className="h-16 w-16 mb-4">
-                        <img
-                          src={
-                            templateImage
-                          }
-                          alt={template.template_name}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">
-                        {template.template_name}
-                      </h3>
-                      <span className="px-2 py-1 bg-emerald-900 text-emerald-200 text-xs rounded-full">
-                        {template.widget_list.length} {template.widget_list.length === 1 ? "Widget" : "Widgets"}
-                      </span>
-                    </div>
-                  </Link>
-                  <div className="px-6 py-2 bg-gray-700 border-t border-gray-600 flex justify-between rounded-b-lg">
-                    <Link
-                      to={`/playground/${template.template_id}`}
-                      className="text-xs text-gray-300 hover:text-emerald-400"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      className="text-xs text-gray-300 hover:text-red-400"
-                      onClick={() => {
-                        confirmDelete(template.template_id);
-                        closeDropdown();
-                      }}
-                    >
-                      Delete
-                    </button>
-
-                  </div>
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center h-64">
+                <div className="relative h-24 w-24">
+                  <div className="absolute inset-0 border-4 border-emerald-600/30 rounded-full"></div>
+                  <motion.div 
+                    className="absolute inset-0 border-t-4 border-emerald-600 rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 1.5, 
+                      ease: "linear"
+                    }}
+                  ></motion.div>
                 </div>
-              ))}
-              {/* Deletion Confirmation Modal */}
-              {showDeleteModal && (
-                <dialog open className="modal">
-                  <div className="modal-box w-1/4 max-w-sm rounded-lg">
-                    <h2 className="text-2xl mb-6 font-bold text-center">
-                      Confirm Deletion
-                    </h2>
-                    <p className="mb-4">
-                      Are you sure you want to delete this template?
-                    </p>
-                    <div className="flex justify-end mt-6">
-                      <button
-                        className="btn btn-success w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mr-2"
-                        onClick={() => handleDelete(templateToDelete)}
+                <p className="text-emerald-500 mt-4 text-lg">Loading templates...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredTemplates.map((template) => (
+                  <div
+                    key={template._id}
+                    className="bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  >
+                    <Link
+                      to={`/template/${template.template_id}`}
+                      className="block p-6"
+                    >
+                      <div className="flex flex-col items-center">
+                        <div className="h-16 w-16 mb-4">
+                          <img
+                            src={
+                              templateImage
+                            }
+                            alt={template.template_name}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        </div>
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          {template.template_name}
+                        </h3>
+                        <span className="px-2 py-1 bg-emerald-900 text-emerald-200 text-xs rounded-full">
+                          {template.widget_list.length} {template.widget_list.length === 1 ? "Widget" : "Widgets"}
+                        </span>
+                      </div>
+                    </Link>
+                    <div className="px-6 py-2 bg-gray-700 border-t border-gray-600 flex justify-between rounded-b-lg">
+                      <Link
+                        to={`/playground/${template.template_id}`}
+                        className="text-xs text-gray-300 hover:text-emerald-400"
                       >
-                        Yes, Delete
-                      </button>
+                        Edit
+                      </Link>
                       <button
-                        type="button"
-                        onClick={handleCloseModal}
-                        className="btn w-1/2 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                        className="text-xs text-gray-300 hover:text-red-400"
+                        onClick={() => {
+                          confirmDelete(template.template_id);
+                          closeDropdown();
+                        }}
                       >
-                        Cancel
+                        Delete
                       </button>
+
                     </div>
                   </div>
-                </dialog>
-              )}
+                ))}
+                {/* Deletion Confirmation Modal */}
+                {showDeleteModal && (
+                  <dialog open className="modal">
+                    <div className="modal-box w-1/4 max-w-sm rounded-lg">
+                      <h2 className="text-2xl mb-6 font-bold text-center">
+                        Confirm Deletion
+                      </h2>
+                      <p className="mb-4">
+                        Are you sure you want to delete this template?
+                      </p>
+                      <div className="flex justify-end mt-6">
+                        <button
+                          className="btn btn-success w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mr-2"
+                          onClick={() => handleDelete(templateToDelete)}
+                        >
+                          Yes, Delete
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCloseModal}
+                          className="btn w-1/2 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </dialog>
+                )}
 
-              {/* Add New Template Card */}
-              <div
-                onClick={handleOpenModal}
-                className="border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center h-64 hover:border-emerald-500 transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
-              >
-                <div className="text-center p-6">
-                  <div className="mx-auto h-12 w-12 text-gray-400">
-                    <svg
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
+                {/* Add New Template Card */}
+                <div
+                  onClick={handleOpenModal}
+                  className="border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center h-64 hover:border-emerald-500 transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+                >
+                  <div className="text-center p-6">
+                    <div className="mx-auto h-12 w-12 text-gray-400">
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-400">
+                      Create new template
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm text-gray-400">
-                    Create new template
-                  </p>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

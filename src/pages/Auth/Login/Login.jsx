@@ -42,7 +42,7 @@ export const Login = () => {
           className="w-full bg-gray-800 rounded-lg shadow border sm:max-w-md xl:p-0 border-gray-700"
         >
           <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-white md:text-2xl text-center">
+            <h1 className="text-3xl font-extrabold text-white mb-7 md:text-2xl text-center">
               Sign in to your account
             </h1>
             <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>

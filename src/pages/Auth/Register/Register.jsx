@@ -23,7 +23,7 @@ export const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       // Handle password mismatch (you can add toast notifications here)
       console.error('Passwords do not match');
@@ -48,20 +48,21 @@ export const Register = () => {
     <MainLayout>
       <div className="min-h-screen bg-gray-900 flex flex-col justify-center">
         <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
-          <div className="text-center mb-6">
-            <h2 className="text-3xl font-extrabold text-white">
-              Create your account
-            </h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Join us to start building your IoT solutions
-            </p>
-          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="bg-gray-800 py-8 px-4 shadow-xl rounded-lg sm:px-10"
           >
+            <div className="text-center mb-3 mt-1">
+              <h2 className="text-3xl font-extrabold text-white ">
+                Create your account
+              </h2>
+              <p className="mt-2 text-sm text-gray-400">
+                Join us to start building your IoT solutions
+              </p>
+            </div>
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-white">
@@ -152,14 +153,7 @@ export const Register = () => {
             </form>
 
             <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 text-gray-400 bg-gray-800">Or continue with</span>
-                </div>
-              </div>
+
 
               <div className="mt-6">
                 <motion.div

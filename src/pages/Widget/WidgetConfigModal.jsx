@@ -34,8 +34,10 @@ const fetchTemplateVirtualPins = async (templateId) => {
     if (!response.ok) {
       throw new Error(`Failed to fetch template with ID: ${templateId}`);
     }
+    console.log('Fetched Response:', response);
     
     const data = await response.json();
+    console.log('Fetched virtual pins:', data);
     
     if (data && data.template && data.template.virtual_pins) {
       return data.template.virtual_pins;
@@ -80,6 +82,21 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
         setLoading(true);
         const pins = await fetchTemplateVirtualPins(templateId);
         setVirtualPins(pins);
+        
+        // Auto-select the smallest numbered available pin if no pin is already selected
+        if (!widgetConfig?.pinConfig?.id) {
+          const availablePins = pins.filter(pin => !pin.is_used);
+          if (availablePins.length > 0) {
+            // Sort by pin_id numerically and select the smallest one
+            const sortedPins = [...availablePins].sort((a, b) => {
+              return parseInt(a.pin_id) - parseInt(b.pin_id);
+            });
+            setSelectedPin(sortedPins[0]._id || sortedPins[0].pin_id);
+          }
+        }else{
+          setSelectedPin(widgetConfig?.pinConfig?.id);
+        }
+        
         setLoading(false);
       };
       
@@ -117,7 +134,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
     }
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!config) return;
     
     // Create updated configuration
@@ -131,6 +148,44 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
       },
       pinConfig: selectedPin ? { id: selectedPin } : undefined
     };
+    
+    // If a pin is selected, update its information in the backend
+    if (selectedPin) {
+      try {
+        const token = sessionStorage.getItem('authToken');
+        const selectedPinData = virtualPins.find(pin => (pin._id || pin.pin_id) === selectedPin);
+        
+        if (selectedPinData) {
+          const response = await fetch(
+            `https://cloud-platform-server-for-bjit.onrender.com/users/templates/virtualPins/${selectedPin}?template_id=${templateId}`,
+            {
+              method: 'PUT',
+              headers: {
+                'accept': '*/*',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                pin_id: selectedPinData.pin_id,
+                pin_name: selectedPinData.pin_name || `virtual pin ${selectedPinData.pin_id}`,
+                value: parseFloat(currentValue),
+                min_value: parseFloat(minValue),
+                max_value: parseFloat(maxValue),
+                is_used: true
+              })
+            }
+          );
+          
+          if (!response.ok) {
+            console.error('Failed to update virtual pin:', await response.text());
+          } else {
+            console.log('Virtual pin updated successfully');
+          }
+        }
+      } catch (error) {
+        console.error('Error updating virtual pin:', error);
+      }
+    }
     
     // Call onSave with the updated widget
     onSave({
@@ -189,8 +244,12 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
                   >
                     <option value="">-- Select Pin --</option>
                     {virtualPins.map((pin) => (
-                      <option key={pin._id || pin.pin_id} value={pin._id || pin.pin_id}>
-                        Pin {pin.pin_id}
+                      <option 
+                        key={pin._id || pin.pin_id} 
+                        value={pin._id || pin.pin_id}
+                        disabled={pin.is_used}
+                      >
+                        Pin {pin.pin_id} {pin.is_used ? "(Already in use)" : ""}
                       </option>
                     ))}
                   </select>

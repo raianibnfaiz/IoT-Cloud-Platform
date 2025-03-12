@@ -20,6 +20,7 @@ const Profile = () => {
   const photoURL = sessionStorage.getItem("userPhoto");
   const role = "Developer"; // In your app, you might want to get this from session storage
   console.log(username, userEmail, user_id, photoURL);
+  const token = sessionStorage.getItem("authToken");
   // Format user initials from username
   const getUserInitials = () => {
     if (!username || username === "Guest") return "G";
@@ -43,6 +44,7 @@ const Profile = () => {
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+  console.log(token);
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
