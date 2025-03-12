@@ -3,6 +3,7 @@ import { useState, useContext } from 'react';
 import TemplateContext from './TemplateContext';
 import axios from 'axios';
 import { useEffect } from 'react';
+import { API_ENDPOINTS } from '../../config/apiEndpoints';
 
 const TemplateProvider = ({ children }) => {
     const [templates, setTemplates] = useState([]);
@@ -11,7 +12,7 @@ const TemplateProvider = ({ children }) => {
     const fetchTemplates = async () => {
         try {
             const response = await axios.get(
-                'https://cloud-platform-server-for-bjit.onrender.com/templates'
+                API_ENDPOINTS.TEMPLATES
             );
             setTemplates(response.data);
         } catch (error) {

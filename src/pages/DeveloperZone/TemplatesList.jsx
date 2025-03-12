@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaBars } from "react-icons/fa"; // Import the hamburger icon
 import { Link } from "react-router-dom";
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 const TemplatesList = ({ templates, setTemplates }) => {
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ const TemplatesList = ({ templates, setTemplates }) => {
   const handleDelete = async (template_id) => {
     try {
       const response = await fetch(
-        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${template_id}?template_id=${template_id}`,
+        API_ENDPOINTS.TEMPLATE_DETAILS(template_id),
         {
           method: "DELETE",
           headers: {

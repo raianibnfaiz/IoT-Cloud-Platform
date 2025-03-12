@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaChevronDown } from "react-icons/fa"; // Import the dropdown icon
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 const WidgetDropdown = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -9,13 +10,13 @@ const WidgetDropdown = () => {
     const fetchWidgets = async () => {
       try {
         const response = await fetch(
-          "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+          API_ENDPOINTS.WIDGETS,
           {
             method: "GET",
             headers: {
               accept: "application/json",
               Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJhaWFuaWJuZmFpekBnbWFpbC5jb20iLCJ1c2VyX2lkIjoidXNyX2MxYzhiNThmMGIiLCJpYXQiOjE3Mzk1MjQ0MTJ9.7OV0FSmG0K_vGhPvYMrthJkQFGGnQVFAGRCXS5qkumk",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFuaWJuZmFpekBnbWFpbC5jb20iLCJ1c2VyX2lkIjoidXNyX2MxYzhiNThmMGIiLCJpYXQiOjE3Mzk1MjQ0MTJ9.7OV0FSmG0K_vGhPvYMrthJkQFGGnQVFAGRCXS5qkumk",
             },
           }
         );

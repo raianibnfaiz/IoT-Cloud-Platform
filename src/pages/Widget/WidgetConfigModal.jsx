@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PropTypes from 'prop-types';
+import { API_ENDPOINTS } from '../../config/apiEndpoints';
 
 // Parse the JSON configuration from the widget image property
 const parseWidgetConfig = (widget) => {
@@ -23,7 +24,7 @@ const fetchTemplateVirtualPins = async (templateId) => {
     }
     
     const token = sessionStorage.getItem('authToken');
-    const response = await fetch(`https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`, {
+    const response = await fetch(API_ENDPOINTS.TEMPLATE_DETAILS(templateId), {
       method: 'GET',
       headers: {
         'accept': 'application/json',
@@ -172,7 +173,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
         
         if (selectedPinData) {
           const response = await fetch(
-            `https://cloud-platform-server-for-bjit.onrender.com/users/templates/virtualPins/${selectedPin}?template_id=${templateId}`,
+            API_ENDPOINTS.UPDATE_VIRTUAL_PIN(selectedPin, templateId),
             {
               method: 'PUT',
               headers: {
@@ -246,7 +247,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
         
         // Make the DELETE request to free up the virtual pin
         const response = await fetch(
-          `https://cloud-platform-server-for-bjit.onrender.com/users/templates/virtualPins/${selectedPin}?template_id=${templateId}`,
+          API_ENDPOINTS.DELETE_VIRTUAL_PIN(selectedPin, templateId),
           {
             method: 'DELETE',
             headers: {

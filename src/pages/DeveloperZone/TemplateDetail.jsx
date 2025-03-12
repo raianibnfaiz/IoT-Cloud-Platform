@@ -12,6 +12,7 @@ import {
   FaPlus,
 } from "react-icons/fa";
 import AddWidgetModal from "./AddWidgetModal";
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 const TemplateDetails = () => {
   const { templateId } = useParams();
@@ -39,7 +40,7 @@ const TemplateDetails = () => {
     setLoadingWidgets(true);
     try {
       const response = await fetch(
-        "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+        API_ENDPOINTS.WIDGETS,
         {
           method: "GET",
           headers: {
@@ -104,7 +105,7 @@ const TemplateDetails = () => {
 
     try {
       const response = await fetch(
-        "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+        API_ENDPOINTS.TEMPLATES,
         {
           method: "POST",
           headers: {
@@ -161,13 +162,12 @@ const TemplateDetails = () => {
     const fetchTemplateDetails = async () => {
       try {
         const response = await fetch(
-          `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
+          API_ENDPOINTS.TEMPLATE_DETAILS(templateId),
           {
             method: "GET",
             headers: {
               accept: "application/json",
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJhaWFuaWJuZmFpekBnbWFpbC5jb20iLCJ1c2VyX2lkIjoidXNyX2MxYzhiNThmMGIiLCJpYXQiOjE3Mzk1MjQ0MTJ9.7OV0FSmG0K_vGhPvYMrthJkQFGGnQVFAGRCXS5qkumk",
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -196,7 +196,7 @@ const TemplateDetails = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, [templateId, darkMode]);
+  }, [templateId, darkMode, token]);
 
   // Toggle dark mode and save preference
   const toggleDarkMode = () => {
