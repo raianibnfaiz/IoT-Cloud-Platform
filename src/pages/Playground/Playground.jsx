@@ -350,7 +350,7 @@ const Playground = () => {
     // Create new component with default values based on widget type
     const newComponent = {
       instanceId,
-      widgetId: widget.id,
+      widget_id: instanceId,
       name: widget.name,
       type: widget.type,
       image: widget.image,
@@ -542,7 +542,7 @@ const Playground = () => {
       console.log("Checking Widget ID",component)
         // Fix: Format widget_id correctly and ensure all fields match API expectations
         return {
-          widget_id: component._id || component.id,
+          widget_id: component.widget_id || component.id,
           pinConfig: pinConfigId ? [pinConfigId] : [],
           position: component.position || { x: 0, y: 0 }
         };
