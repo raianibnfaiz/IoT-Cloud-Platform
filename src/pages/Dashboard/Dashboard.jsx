@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import templateImage from "../../assets/image/template.jpeg";
 import { motion } from "framer-motion";
 import { Timer } from "three/examples/jsm/Addons.js";
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 const Dashboard = () => {
   const token = sessionStorage.getItem("authToken");
@@ -25,7 +26,7 @@ const Dashboard = () => {
   const fetchTemplates = async () => {
     try {
       const response = await axios.get(
-        "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+        API_ENDPOINTS.TEMPLATES,
         {
           headers: {
             Accept: "application/json",
@@ -52,7 +53,7 @@ const Dashboard = () => {
   const handleDelete = async (template_id) => {
     try {
       const response = await fetch(
-        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${template_id}?template_id=${template_id}`,
+        API_ENDPOINTS.TEMPLATE_DETAILS(template_id),
         {
           method: "DELETE",
           headers: {
@@ -101,7 +102,7 @@ const Dashboard = () => {
 
     try {
       const response = await fetch(
-        "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+        API_ENDPOINTS.TEMPLATES,
         {
           method: "POST",
           headers: {

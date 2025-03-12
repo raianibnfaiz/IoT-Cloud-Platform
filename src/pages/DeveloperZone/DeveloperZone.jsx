@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import TemplatesList from './TemplatesList'; // Adjust the import path as necessary
+import { API_ENDPOINTS } from '../../config/apiEndpoints';
 
 const DeveloperZone = () => {
     const [templateName, setTemplateName] = useState('');
@@ -22,7 +23,7 @@ const DeveloperZone = () => {
 
         try {
             setLoading(true);
-            const response = await axios.get('https://cloud-platform-server-for-bjit.onrender.com/users/templates', {
+            const response = await axios.get(API_ENDPOINTS.TEMPLATES, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -51,7 +52,7 @@ const DeveloperZone = () => {
         setMessage('');
 
         try {
-            const response = await fetch('https://cloud-platform-server-for-bjit.onrender.com/users/templates', {
+            const response = await fetch(API_ENDPOINTS.TEMPLATES, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

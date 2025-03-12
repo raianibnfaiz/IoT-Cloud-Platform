@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 const AddWidgetModal = ({ templateId, templateDetails, availableWidgets }) => {
   const [selectedWidget, setSelectedWidget] = useState("");
@@ -32,7 +33,7 @@ const AddWidgetModal = ({ templateId, templateDetails, availableWidgets }) => {
     setAddingWidget(true);
     try {
       const response = await fetch(
-        `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${temp_id}`,
+        API_ENDPOINTS.UPDATE_TEMPLATE(temp_id),
         {
           method: "PUT",
           headers: {

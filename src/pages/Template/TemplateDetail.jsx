@@ -10,6 +10,7 @@ import {
     FaPlus,
 } from "react-icons/fa";
 import AddWidgetModal from "./AddWidgetModal";
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 const TemplateDetails = () => {
     const { templateId } = useParams();
@@ -36,7 +37,7 @@ const TemplateDetails = () => {
         setLoadingWidgets(true);
         try {
             const response = await fetch(
-                "https://cloud-platform-server-for-bjit.onrender.com/widgets",
+                API_ENDPOINTS.WIDGETS,
                 {
                     method: "GET",
                     headers: {
@@ -87,7 +88,7 @@ const TemplateDetails = () => {
 
         try {
             const response = await fetch(
-                "https://cloud-platform-server-for-bjit.onrender.com/users/templates",
+                API_ENDPOINTS.TEMPLATES,
                 {
                     method: "POST",
                     headers: {
@@ -144,8 +145,7 @@ const TemplateDetails = () => {
         const fetchTemplateDetails = async () => {
             try {
                 const response = await fetch(
-                    `https://cloud-platform-server-for-bjit.onrender.com/users/templates/${templateId}`,
-                    // `http://localhost:8000/users/templates/${templateId}`,
+                    API_ENDPOINTS.TEMPLATE_DETAILS(templateId),
                     {
                         method: "GET",
                         headers: {
