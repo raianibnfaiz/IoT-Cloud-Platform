@@ -50,7 +50,7 @@ const fetchTemplateVirtualPins = async (templateId) => {
   }
 };
 
-const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
+const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onReset }) => {
   const [config, setConfig] = useState(null);
   const [virtualPins, setVirtualPins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -206,6 +206,23 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
 
   // Update the resetSelectedPin function to make a DELETE API call
   const resetSelectedPin = async () => {
+
+    const updatedConfig = {
+      ...config,
+      state: {
+        ...config.state,
+        min_value: parseFloat(0),
+        max_value: parseFloat(100),
+        default_value: parseFloat(50)
+      },
+      pinConfig: undefined
+    };
+
+    onReset({
+      ...widget,
+      image: JSON.stringify(updatedConfig)
+    });
+
     // If a pin is currently selected, attempt to delete it first
     if (selectedPin) {
       try {
@@ -234,12 +251,13 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
           //       : pin
           //   )
           // );
+
           const newPins = virtualPins.map(pin =>
             (pin._id) === selectedPin ? { ...pin, is_used: false } : pin
           );
           console.log("new pins 1", newPins);
           // widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id && widgetConfig.pinConfig.id == selectedPin && (widgetConfig.pinConfig = {});
-          setConfig(null);
+          //setConfig(null);
         
           setVirtualPins(newPins);
           console.log("virtual pins 2", virtualPins);
@@ -473,7 +491,8 @@ WidgetConfigModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
-  templateId: PropTypes.string
+  templateId: PropTypes.string,
+  onReset: PropTypes.func.isRequired
 };
 
 export default WidgetConfigModal;

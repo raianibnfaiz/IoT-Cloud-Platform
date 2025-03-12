@@ -487,6 +487,19 @@ const Playground = () => {
     setConfigModalOpen(true);
   };
 
+  const handleReset = (updatedWidget) => {
+    setComponents(components.map(component => {
+      if (component.instanceId === updatedWidget.instanceId) {
+        return {
+          ...component,
+          ...updatedWidget
+        };
+      }
+      return component;
+    }));
+  };
+  
+
   const handleSaveConfig = (updatedWidget) => {
     // Update the component with the new configuration
     setComponents(components.map(component => {
@@ -920,6 +933,7 @@ const Playground = () => {
         }}
         onSave={handleSaveConfig}
         templateId={templateId}
+        onReset={handleReset}
       />
     </div>
   );
