@@ -50,7 +50,7 @@ const fetchTemplateVirtualPins = async (templateId) => {
   }
 };
 
-const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onReset }) => {
+const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onReset, onVirtualPinUpdate }) => {
   const [config, setConfig] = useState(null);
   const [virtualPins, setVirtualPins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -114,6 +114,14 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
       }
     }
   }, [widget, templateId]);
+
+  useEffect(() => {
+    // Notify parent component about pin usage changes
+    if (virtualPins.length > 0) {
+      const availablePinsCount = virtualPins.filter(pin => !pin.is_used).length;
+      onVirtualPinUpdate && onVirtualPinUpdate(availablePinsCount, virtualPins.length);
+    }
+  }, [virtualPins]);
   
   const getNormalizedType = () => {
     if (!config) return 'unknown';
@@ -187,6 +195,14 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
             console.error('Failed to update virtual pin:', await response.text());
           } else {
             console.log('Virtual pin updated successfully');
+            // Update local state to reflect pin usage
+            setVirtualPins(prevPins => 
+              prevPins.map(pin => 
+                (pin._id || pin.pin_id) === selectedPin 
+                  ? { ...pin, is_used: true } 
+                  : pin
+              )
+            );
           }
         }
       } catch (error) {
@@ -279,6 +295,9 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
           } else {
             setSelectedPin('');
           }
+
+          // Notify parent about pin usage change
+          onVirtualPinUpdate && onVirtualPinUpdate(availablePins.length, newPins.length);
         } else {
           console.error('Failed to reset virtual pin:', await response.text());
         }
@@ -492,7 +511,8 @@ WidgetConfigModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
   templateId: PropTypes.string,
-  onReset: PropTypes.func.isRequired
+  onReset: PropTypes.func.isRequired,
+  onVirtualPinUpdate: PropTypes.func,
 };
 
 export default WidgetConfigModal;

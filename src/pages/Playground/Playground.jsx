@@ -137,6 +137,8 @@ const Playground = () => {
   const [lastComponentPosition, setLastComponentPosition] = useState(null);
   const [templateDetails, setTemplateDetails] = useState(null);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [availablePinsCount, setAvailablePinsCount] = useState(0);
+  const [totalPinsCount, setTotalPinsCount] = useState(0);
 
   const token = sessionStorage.getItem('authToken');
 
@@ -209,6 +211,14 @@ const Playground = () => {
           
           setComponents(templateComponents);
         }
+      }
+
+      // Update pins counts
+      if (data.template && data.template.virtual_pins) {
+        const pins = data.template.virtual_pins;
+        const availablePins = pins.filter(pin => !pin.is_used).length;
+        setAvailablePinsCount(availablePins);
+        setTotalPinsCount(pins.length);
       }
     } catch (error) {
       console.error('Error fetching template details:', error);
@@ -694,8 +704,13 @@ const Playground = () => {
                 <p className="text-gray-300 text-sm">Name: {templateDetails.template.template_name}</p>
                 <p className="text-gray-300 text-sm">ID: {templateDetails.template.template_id}</p>
                 <p className="text-gray-300 text-sm">
-                  Pins: {templateDetails.template.virtual_pins?.length || 0}
+                  Available Pins: {availablePinsCount} / {totalPinsCount}
                 </p>
+                {availablePinsCount === 0 && totalPinsCount > 0 && (
+                  <p className="text-xs text-red-400 mt-1">
+                    No available pins. Reset widgets to free up pins.
+                  </p>
+                )}
               </div>
             )}
 
@@ -791,6 +806,12 @@ const Playground = () => {
       default:
         return null;
     }
+  };
+
+  // Handle virtual pin updates from modal
+  const handleVirtualPinUpdate = (availableCount, totalCount) => {
+    setAvailablePinsCount(availableCount);
+    setTotalPinsCount(totalCount);
   };
 
   return (
@@ -934,6 +955,7 @@ const Playground = () => {
         onSave={handleSaveConfig}
         templateId={templateId}
         onReset={handleReset}
+        onVirtualPinUpdate={handleVirtualPinUpdate}
       />
     </div>
   );
