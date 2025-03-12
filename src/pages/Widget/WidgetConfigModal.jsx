@@ -58,6 +58,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(100);
   const [currentValue, setCurrentValue] = useState(50);
+  const [isPinAlreadySelected, setIsPinAlreadySelected] = useState(false);
   
   // Get widget configuration on mount
   useEffect(() => {
@@ -76,14 +77,19 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
       const loadPins = async () => {
         setLoading(true);
         const pins = await fetchTemplateVirtualPins(templateId);
+        console.log('Fetched Pins:', pins);
         setVirtualPins(pins);
         
-        // If widget already has a pin configured, select that pin
+        // If widget already has a pin configured, select that pin and mark as selected
         if (widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id) {
           console.log("Setting pin from existing config:", widgetConfig.pinConfig.id);
           setSelectedPin(widgetConfig.pinConfig.id);
+          setIsPinAlreadySelected(true);
+          console.log("check");
+          console.log(widgetConfig)
         } else {
           // For new widgets, find the smallest available pin number
+          setIsPinAlreadySelected(false);
           const availablePins = pins.filter(pin => !pin.is_used);
           if (availablePins.length > 0) {
             const sortedPins = [...availablePins].sort((a, b) => {
@@ -135,6 +141,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
   };
   
   const handleSave = async () => {
+    console.log('Saving configuration...');
     if (!config) return;
     
     // Create updated configuration
@@ -196,6 +203,81 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
     // Close the modal
     onClose();
   };
+
+  // Update the resetSelectedPin function to make a DELETE API call
+  const resetSelectedPin = async () => {
+    // If a pin is currently selected, attempt to delete it first
+    if (selectedPin) {
+      try {
+        const token = sessionStorage.getItem('authToken');
+        
+        // Make the DELETE request to free up the virtual pin
+        const response = await fetch(
+          `https://cloud-platform-server-for-bjit.onrender.com/users/templates/virtualPins/${selectedPin}?template_id=${templateId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'accept': '*/*',
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        if (response.ok) {
+          console.log(`Successfully reset virtual pin with ID: ${selectedPin}`);
+          console.log("virtual pins", virtualPins);
+          // Update the local virtualPins state to reflect the pin is now available
+          // setVirtualPins(prevPins => 
+          //   prevPins.map(pin => 
+          //     (pin._id || pin.pin_id) === selectedPin 
+          //       ? { ...pin, is_used: false } 
+          //       : pin
+          //   )
+          // );
+          const newPins = virtualPins.map(pin =>
+            (pin._id) === selectedPin ? { ...pin, is_used: false } : pin
+          );
+          console.log("new pins 1", newPins);
+          // widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id && widgetConfig.pinConfig.id == selectedPin && (widgetConfig.pinConfig = {});
+          setConfig(null);
+        
+          setVirtualPins(newPins);
+          console.log("virtual pins 2", virtualPins);
+          // If pin was previously assigned, it's no longer considered "already selected"
+          setIsPinAlreadySelected(false);
+          
+          // Now find and select the smallest available pin
+          const updatedPins = [...virtualPins].map(pin => 
+            (pin._id || pin.pin_id) === selectedPin ? { ...pin, is_used: false } : pin
+          );
+          
+          const availablePins = updatedPins.filter(pin => !pin.is_used);
+          if (availablePins.length > 0) {
+            const sortedPins = [...availablePins].sort((a, b) => {
+              return parseInt(a.pin_id) - parseInt(b.pin_id);
+            });
+            console.log("Reset to smallest available pin:", sortedPins[0]._id);
+            setSelectedPin(sortedPins[0]._id || sortedPins[0].pin_id);
+          } else {
+            setSelectedPin('');
+          }
+        } else {
+          console.error('Failed to reset virtual pin:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error resetting virtual pin:', error);
+      }
+    } else {
+      // If no pin was selected, just find the smallest available pin
+      const availablePins = virtualPins.filter(pin => !pin.is_used);
+      if (availablePins.length > 0) {
+        const sortedPins = [...availablePins].sort((a, b) => {
+          return parseInt(a.pin_id) - parseInt(b.pin_id);
+        });
+        setSelectedPin(sortedPins[0]._id || sortedPins[0].pin_id);
+      }
+    }
+  };
   
   return (
     <AnimatePresence>
@@ -233,26 +315,49 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId }) => {
                 
                 {/* Virtual Pin Selection */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Virtual Pin
-                  </label>
-                  <select
-                    value={selectedPin}
-                    onChange={(e) => setSelectedPin(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    disabled={!templateId || virtualPins.length === 0}
-                  >
-                    <option value="">-- Select Pin --</option>
-                    {virtualPins.map((pin) => (
-                      <option 
-                        key={pin._id || pin.pin_id} 
-                        value={pin._id || pin.pin_id}
-                        disabled={pin.is_used}
-                      >
-                        Pin {pin.pin_id} {pin.is_used ? "(Already in use)" : ""}
+                  <div className="flex justify-between items-center">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Virtual Pin
+                    </label>
+                    {isPinAlreadySelected && (
+                      <span className="text-xs text-amber-500">
+                        Pin already assigned and cannot be changed
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedPin}
+                      onChange={(e) => !isPinAlreadySelected && setSelectedPin(e.target.value)}
+                      className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                        isPinAlreadySelected ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
+                      disabled={!templateId || virtualPins.length === 0 || isPinAlreadySelected}
+                    >
+                      <option value="">
+                        {isPinAlreadySelected ? `Pin ${virtualPins.find(p => (p._id || p.pin_id) === selectedPin)?.pin_id || ''} (Already used)` : "-- Select Pin --"}
                       </option>
-                    ))}
-                  </select>
+                      {!isPinAlreadySelected && virtualPins.map((pin) => (
+                        <option 
+                          key={pin._id || pin.pin_id} 
+                          value={pin._id || pin.pin_id}
+                          disabled={pin.is_used && pin._id !== selectedPin}
+                        >
+                          Pin {pin.pin_id} {pin.is_used && pin._id !== selectedPin ? "(Already in use)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => resetSelectedPin()}
+                      className="flex-shrink-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                      title="Reset pin selection"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                  </div>
                   {templateId && virtualPins.length === 0 && (
                     <p className="text-sm text-red-500 mt-1">
                       No virtual pins available in this template.

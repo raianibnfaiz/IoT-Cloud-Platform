@@ -459,22 +459,28 @@ const Playground = () => {
   const handleConfigClick = (widget) => {
     // Ensure we have the latest pin configuration from the template
     const widgetWithPinConfig = {...widget};
+    let hasPinConfigId = false;
     
     // If the widget has image data as a string, parse it to extract pinConfig
     if (typeof widget.image === 'string') {
       try {
         const parsedConfig = JSON.parse(widget.image);
-        if (parsedConfig.pinConfig) {
+        if (parsedConfig.pinConfig && parsedConfig.pinConfig.id) {
           widgetWithPinConfig.pinConfig = parsedConfig.pinConfig;
+          hasPinConfigId = true;
         }
       } catch (error) {
         console.error('Error parsing widget configuration:', error);
       }
     } 
     // If the image is already an object, check for pinConfig
-    else if (widget.image && widget.image.pinConfig) {
+    else if (widget.image && widget.image.pinConfig && widget.image.pinConfig.id) {
       widgetWithPinConfig.pinConfig = widget.image.pinConfig;
+      hasPinConfigId = true;
     }
+    
+    // Add a flag to indicate if the widget already has a selected pin
+    widgetWithPinConfig.hasPinAssigned = hasPinConfigId;
     
     console.log("Opening config for widget with pin data:", widgetWithPinConfig);
     setSelectedWidget(widgetWithPinConfig);
