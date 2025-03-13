@@ -65,23 +65,39 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
   // Get widget configuration on mount
   useEffect(() => {
     if (widget) {
+      console.log('Widget:', widget);
       const widgetConfig = parseWidgetConfig(widget);
       setConfig(widgetConfig);
       setErrorMessage(''); // Clear any previous errors
-      
-      // Set default values from configuration if available
-      if (widgetConfig && widgetConfig.state) {
-        setMinValue(widgetConfig.state.min_value || 0);
-        setMaxValue(widgetConfig.state.max_value || 100);
-        setCurrentValue(widgetConfig.state.default_value || 50);
-      }
-      
+      console.log('Widget Config:', widgetConfig);
+            
       // Load virtual pins from the current template
       const loadPins = async () => {
         setLoading(true);
         const pins = await fetchTemplateVirtualPins(templateId);
         console.log('Fetched Pins:', pins);
         setVirtualPins(pins);
+
+        if(widget && widget.pinConfig && widget.pinConfig.length > 0) {
+          console.log("Setting pin from existing config:", widget.pinConfig[0]);
+          widget.pinConfig.map((pin) => {
+            if(pin.id|| pin._id) {
+              widgetConfig.pinConfig ={id: pin.id || pin._id};
+              widgetConfig.state.min_value = pin.min_value;
+              widgetConfig.state.max_value = pin.max_value;
+              widgetConfig.state.default_value = pin.value;
+              setConfig(widgetConfig);
+            }
+          });
+        }
+
+              // Set default values from configuration if available
+      if (widgetConfig && widgetConfig.state) {
+        setMinValue(widgetConfig.state.min_value || 0);
+        setMaxValue(widgetConfig.state.max_value || 100);
+        setCurrentValue(widgetConfig.state.default_value || 50);
+      }
+
         
         // If widget already has a pin configured, select that pin and mark as selected
         if (widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id) {
