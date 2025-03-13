@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
@@ -175,6 +175,7 @@ DraggableComponent.propTypes = {
 
 const Playground = () => {
   const { templateId } = useParams();
+  const navigate = useNavigate();
   const [components, setComponents] = useState([]);
   const [activeSidebarTab, setActiveSidebarTab] = useState('components');
   const [availableWidgets, setAvailableWidgets] = useState([]);
@@ -1060,6 +1061,18 @@ const Playground = () => {
     setTotalPinsCount(totalCount);
   };
 
+  // Function to navigate to preview screen
+  const handlePreviewClick = () => {
+    // Navigate to preview screen with all necessary data
+    navigate(`/preview/${templateId}`, {
+      state: {
+        components: components,
+        widgetStates: widgetStates,
+        templateName: templateDetails?.template?.template_name || "Template Preview"
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
@@ -1088,7 +1101,9 @@ const Playground = () => {
             </div>
           ) : (
             <>
-              <button className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700">
+              <button 
+                onClick={handlePreviewClick}
+                className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700 transition-colors">
                 Preview
               </button>
               <button

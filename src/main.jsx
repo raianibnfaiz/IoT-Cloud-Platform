@@ -22,6 +22,7 @@ import Billing from "./pages/Billing/Billing";
 import TemplateDetail from "./pages/Template/TemplateDetail";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Playground from "./pages/Playground/Playground";
+import PreviewScreen from "./pages/Preview/PreviewScreen";
 import Pricing from "./pages/Pricing/Pricing";
 import Enterprise from "./pages/Enterprise/Enterprise";
 import Developers from "./pages/Developers/Developers";
@@ -102,6 +103,12 @@ const router = createBrowserRouter([
         path: "playground/:templateId",
         element: <PrivateRoute>
             <Playground></Playground>
+        </PrivateRoute>,
+      },
+      {
+        path: "preview/:templateId",
+        element: <PrivateRoute>
+            <PreviewScreen></PreviewScreen>
         </PrivateRoute>,
       },
       {
