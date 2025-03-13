@@ -408,11 +408,11 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
                       </button>
                     </div>
                     
-                    {widget.pinRequired > 0 && (
+                    {/* {widget.pinRequired > 0 && (
                       <p className="text-sm text-amber-600 dark:text-amber-400">
                         This widget requires {widget.pinRequired} pin(s) to function properly.
                       </p>
-                    )}
+                    )} */}
                     
                     {isPinAlreadySelected && (
                       <p className="text-sm text-amber-500">
