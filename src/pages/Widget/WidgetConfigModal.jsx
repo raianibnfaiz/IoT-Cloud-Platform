@@ -60,12 +60,14 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
   const [maxValue, setMaxValue] = useState(100);
   const [currentValue, setCurrentValue] = useState(50);
   const [isPinAlreadySelected, setIsPinAlreadySelected] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   // Get widget configuration on mount
   useEffect(() => {
     if (widget) {
       const widgetConfig = parseWidgetConfig(widget);
       setConfig(widgetConfig);
+      setErrorMessage(''); // Clear any previous errors
       
       // Set default values from configuration if available
       if (widgetConfig && widgetConfig.state) {
@@ -152,6 +154,12 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
   const handleSave = async () => {
     console.log('Saving configuration...');
     if (!config) return;
+    
+    // Check if the widget requires a pin but none is selected
+    if (widget.pinRequired > 0 && !selectedPin) {
+      setErrorMessage(`This widget requires ${widget.pinRequired} pin(s). Please select a pin before saving.`);
+      return;
+    }
     
     // Create updated configuration
     const updatedConfig = {
@@ -328,170 +336,192 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
           onClick={onClose}
         >
           <motion.div
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden max-w-lg w-full"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-              Configure {widget.name || 'Widget'}
-            </h2>
-            
-            {loading ? (
-              <div className="flex justify-center py-6">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Show message if no template selected */}
-                {!templateId && (
-                  <div className="p-3 bg-yellow-100 border border-yellow-300 rounded-md text-yellow-700 mb-4">
-                    No template selected. Please select a template to configure virtual pins.
-                  </div>
-                )}
-                
-                {/* Virtual Pin Selection */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Virtual Pin
-                    </label>
-                    {isPinAlreadySelected && (
-                      <span className="text-xs text-amber-500">
-                        Pin already assigned and cannot be changed
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <select
-                      value={selectedPin}
-                      onChange={(e) => !isPinAlreadySelected && setSelectedPin(e.target.value)}
-                      className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                        isPinAlreadySelected ? 'opacity-70 cursor-not-allowed' : ''
-                      }`}
-                      disabled={!templateId || virtualPins.length === 0 || isPinAlreadySelected}
-                    >
-                      <option value="">
-                        {isPinAlreadySelected ? `Pin ${virtualPins.find(p => (p._id || p.pin_id) === selectedPin)?.pin_id || ''} (Already used)` : "-- Select Pin --"}
-                      </option>
-                      {!isPinAlreadySelected && virtualPins.map((pin) => (
-                        <option 
-                          key={pin._id || pin.pin_id} 
-                          value={pin._id || pin.pin_id}
-                          disabled={pin.is_used && pin._id !== selectedPin}
-                        >
-                          Pin {pin.pin_id} {pin.is_used && pin._id !== selectedPin ? "(Already in use)" : ""}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => resetSelectedPin()}
-                      className="flex-shrink-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                      title="Reset pin selection"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                    </button>
-                  </div>
-                  {templateId && virtualPins.length === 0 && (
-                    <p className="text-sm text-red-500 mt-1">
-                      No virtual pins available in this template.
-                    </p>
+            <div className="space-y-6 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Configure {widget.name || 'Widget'}
+              </h3>
+              
+              {errorMessage && (
+                <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+                  <span className="font-medium">Error:</span> {errorMessage}
+                </div>
+              )}
+              
+              {loading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Show message if no template selected */}
+                  {!templateId && (
+                    <div className="p-3 bg-yellow-100 border border-yellow-300 rounded-md text-yellow-700 mb-4">
+                      No template selected. Please select a template to configure virtual pins.
+                    </div>
                   )}
-                </div>
-                
-                {/* Min Value */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Min Value
-                  </label>
-                  <input
-                    type="number"
-                    value={minValue}
-                    onChange={(e) => setMinValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-                
-                {/* Max Value */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Max Value
-                  </label>
-                  <input
-                    type="number"
-                    value={maxValue}
-                    onChange={(e) => setMaxValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-                
-                {/* Current Value */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Current Value
-                  </label>
-                  <input
-                    type="number"
-                    value={currentValue}
-                    min={minValue}
-                    max={maxValue}
-                    onChange={(e) => setCurrentValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-                
-                {/* Show different config options based on widget type */}
-                {getNormalizedType() === 'switch' && (
+                  
+                  {/* Virtual Pin Selection */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Default State
+                      Virtual Pin {widget.pinRequired > 0 ? 
+                        <span className="text-red-500">*</span> : 
+                        ''}
                     </label>
-                    <div className="flex items-center space-x-4">
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          checked={currentValue === 1}
-                          onChange={() => setCurrentValue(1)}
-                          className="form-radio text-blue-500"
-                        />
-                        <span className="ml-2 text-gray-700 dark:text-gray-300">On</span>
-                      </label>
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          checked={currentValue === 0}
-                          onChange={() => setCurrentValue(0)}
-                          className="form-radio text-blue-500"
-                        />
-                        <span className="ml-2 text-gray-700 dark:text-gray-300">Off</span>
-                      </label>
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedPin}
+                        onChange={(e) => !isPinAlreadySelected && setSelectedPin(e.target.value)}
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                          isPinAlreadySelected ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                        disabled={!templateId || virtualPins.length === 0 || isPinAlreadySelected}
+                      >
+                        <option value="">
+                          {isPinAlreadySelected ? `Pin ${virtualPins.find(p => (p._id || p.pin_id) === selectedPin)?.pin_id || ''} (Already used)` : "-- Select Pin --"}
+                        </option>
+                        {!isPinAlreadySelected && virtualPins.map((pin) => (
+                          <option 
+                            key={pin._id || pin.pin_id} 
+                            value={pin._id || pin.pin_id}
+                            disabled={pin.is_used && pin._id !== selectedPin}
+                          >
+                            Pin {pin.pin_id} {pin.is_used && pin._id !== selectedPin ? "(Already in use)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => resetSelectedPin()}
+                        className="flex-shrink-0 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        title="Reset pin selection"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
                     </div>
+                    
+                    {widget.pinRequired > 0 && (
+                      <p className="text-sm text-amber-600 dark:text-amber-400">
+                        This widget requires {widget.pinRequired} pin(s) to function properly.
+                      </p>
+                    )}
+                    
+                    {isPinAlreadySelected && (
+                      <p className="text-sm text-amber-500">
+                        Pin already assigned and cannot be changed
+                      </p>
+                    )}
+                    
+                    {templateId && virtualPins.length === 0 && (
+                      <p className="text-sm text-red-500 mt-1">
+                        No virtual pins available in this template.
+                      </p>
+                    )}
                   </div>
-                )}
-                
-                {/* Actions */}
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
+                  
+                  {/* Min Value */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Min Value
+                    </label>
+                    <input
+                      type="number"
+                      value={minValue}
+                      onChange={(e) => setMinValue(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                  
+                  {/* Max Value */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Max Value
+                    </label>
+                    <input
+                      type="number"
+                      value={maxValue}
+                      onChange={(e) => setMaxValue(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                  
+                  {/* Current Value */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Current Value
+                    </label>
+                    <input
+                      type="number"
+                      value={currentValue}
+                      min={minValue}
+                      max={maxValue}
+                      onChange={(e) => setCurrentValue(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                  
+                  {/* Show different config options based on widget type */}
+                  {getNormalizedType() === 'switch' && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Default State
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        <label className="inline-flex items-center">
+                          <input
+                            type="radio"
+                            checked={currentValue === 1}
+                            onChange={() => setCurrentValue(1)}
+                            className="form-radio text-blue-500"
+                          />
+                          <span className="ml-2 text-gray-700 dark:text-gray-300">On</span>
+                        </label>
+                        <label className="inline-flex items-center">
+                          <input
+                            type="radio"
+                            checked={currentValue === 0}
+                            onChange={() => setCurrentValue(0)}
+                            className="form-radio text-blue-500"
+                          />
+                          <span className="ml-2 text-gray-700 dark:text-gray-300">Off</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Actions */}
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                        widget.pinRequired > 0 && !selectedPin ? 
+                        'bg-blue-300 cursor-not-allowed' : 
+                        'bg-blue-500 hover:bg-blue-600'
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700`}
+                      disabled={widget.pinRequired > 0 && !selectedPin}
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </motion.div>
         </motion.div>
       )}
@@ -506,7 +536,8 @@ WidgetConfigModal.propTypes = {
     name: PropTypes.string,
     type: PropTypes.string,
     image: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-    instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    pinRequired: PropTypes.number
   }),
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,

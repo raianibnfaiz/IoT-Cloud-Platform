@@ -36,9 +36,14 @@ const parseWidgetConfig = (imageProperty) => {
 };
 
 const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick, onDrag }) => {
-  const [position, setPosition] = useState({ x: component.position.x, y: component.position.y });
   const [isDragging, setIsDragging] = useState(false);
-  const [wasDragged, setWasDragged] = useState(false);
+  // Keep track of exactly when drag ended to completely disable config clicks
+  const [dragEndTime, setDragEndTime] = useState(0);
+  
+  // Calculate if enough time has passed since last drag (1 second cooldown)
+  const isClickDisabled = () => {
+    return Date.now() - dragEndTime < 1000; 
+  };
 
   const style = {
     zIndex: isDragging ? 999 : 1,
@@ -47,63 +52,97 @@ const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick
 
   // Framer Motion variants for smooth animations
   const variants = {
-    initial: { scale: 0.8, opacity: 0 },
-    animate: { scale: 1, opacity: 1 },
     exit: { scale: 0.8, opacity: 0 },
     hover: { scale: 1.02 },
     drag: { scale: 1.1, cursor: 'grabbing' }
+  };
+  
+  // Safely handles widget click events - completely blocks during cooldown
+  const handleWidgetClick = (widget) => {
+    // If dragging recently happened, block ALL clicks for a full second
+    if (isClickDisabled()) {
+      console.log("Config click blocked - too soon after drag");
+      return;
+    }
+    
+    // Only if sufficient time has passed, allow the config click
+    onConfigClick(widget);
   };
 
   return (
     <motion.div
       style={style}
       className="group relative"
-      initial="initial"
-      animate="animate"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ 
+        scale: 1, 
+        opacity: 1,
+        x: component.position.x,
+        y: component.position.y,
+      }}
+      transition={{
+        type: "spring",
+        damping: 25,
+        stiffness: 350,
+        mass: 0.5
+      }}
       exit="exit"
-      whileHover="hover"
+      whileHover={isClickDisabled() ? {} : "hover"} // Disable hover effect during cooldown
       whileDrag="drag"
       variants={variants}
-      drag
+      drag={true}
       dragMomentum={false}
       dragElastic={0}
       dragTransition={{
-        power: 0,
+        power: 0.1,
         timeConstant: 0,
         modifyTarget: target => target
       }}
       onDragStart={() => {
         setIsDragging(true);
-        setWasDragged(false);
+        // Reset the drag end time while dragging
+        setDragEndTime(0);
       }}
-      onDrag={(event, info) => {
+      onDrag={() => {
+        // Continuously update drag end time during drag to ensure cooldown starts from latest drag
+        setDragEndTime(Date.now());
+      }}
+      onDragEnd={(event, info) => {
+        // Calculate the final position at drag end
         const newPosition = {
-          x: position.x + info.delta.x,
-          y: position.y + info.delta.y
+          x: component.position.x + info.offset.x,
+          y: component.position.y + info.offset.y
         };
-        setPosition(newPosition);
-        setWasDragged(true); // Mark that actual movement occurred
+        
+        // Update parent state with new position
         onDrag(component, newPosition);
-      }}
-      onDragEnd={() => {
+        
+        // Set the drag end time to now to start the cooldown
+        setDragEndTime(Date.now());
+        
+        // Reset the dragging state
         setIsDragging(false);
-        // Keep track that this component was recently dragged
-        // This flag will be used to prevent the config modal from opening
       }}
     >
+      {/* Use a pointer-events-none overlay during cooldown to visually indicate and block all clicks */}
+      {isClickDisabled() && (
+        <div 
+          className="absolute inset-0 bg-transparent z-10" 
+          style={{ pointerEvents: 'auto' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log("Interaction blocked during cooldown");
+          }}
+        />
+      )}
+      
       <Widget3D
         widget={component}
         isPreviewMode={false}
         onValueChanged={(value) => onValueChanged(component.instanceId, value)}
-        onConfigClick={(widget) => {
-          // Only open the config modal if the component wasn't being dragged
-          if (!wasDragged) {
-            onConfigClick(widget);
-          }
-          // Reset the dragged state after a short delay
-          setTimeout(() => setWasDragged(false), 300);
-        }}
+        onConfigClick={handleWidgetClick}
       />
+      
       <motion.button
         onClick={() => onDelete(component.instanceId)}
         className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100"
@@ -184,10 +223,23 @@ const Playground = () => {
 
       const data = await response.json();
       console.log("Template details:", data);
+      
+      // Debug: Log the position data from server response
+      if (data.template && data.template.widget_list) {
+        console.log("Server response widget_list positions:", 
+          data.template.widget_list.map(widget => ({
+            id: widget.widget_id?._id || widget._id,
+            position: widget.position
+          }))
+        );
+      }
+      
       setTemplateDetails(data);
       
       // If template has widgets, add them to the playground
       if (data.template && data.template.widget_list && data.template.widget_list.length > 0) {
+        console.log("Loading template with widget_list:", JSON.stringify(data.template.widget_list, null, 2));
+        
         // Check if we need to fetch widget details separately (if widget_id is null)
         if (data.template.widget_list.some(widget => widget.widget_id === null)) {
           // First, get all widgets for reference
@@ -198,12 +250,22 @@ const Playground = () => {
           const templateComponents = data.template.widget_list.map((widget, index) => {
             // Try to find the widget in availableWidgets using the _id from pinConfig or other means
             // For now, just create a placeholder component
+            
+            // Ensure position data is properly extracted and formatted
+            const position = widget.position && typeof widget.position === 'object' && 
+                           typeof widget.position.x === 'number' && 
+                           typeof widget.position.y === 'number' 
+                           ? widget.position 
+                           : { x: 100 + index * 50, y: 100 + index * 50 };
+            
+            console.log(`Loading placeholder widget ${index} position:`, position);
+            
             return {
               _id: widget._id || `placeholder_${index}`,
               name: `Widget ${index + 1}`,
               type: "unknown",
               instanceId: `template_${widget._id}_${index}`,
-              position: widget.position || { x: 100 + index * 50, y: 100 + index * 50 },
+              position: position,
               // Store pinConfig for later use
               pinConfig: widget.pinConfig
             };
@@ -213,16 +275,24 @@ const Playground = () => {
           console.log("Created placeholder components widget_id_exists:", templateComponents);
         } else {
           // Convert template widgets to playground components
-          console.log("widgets:", data.template.widget_list);
-          const templateComponents = data.template.widget_list.map((widget, index) => ({
-            ...widget.widget_id,
-            instanceId: `template_${widget.widget_id?._id || widget._id}_${index}`,
-            position: widget.position || { x: 100 + index * 50, y: 100 + index * 50 },
-            // Store pinConfig for reference
-            pinConfig: widget.pinConfig
-          }));
-
-          console.log("templateComponent:", templateComponents);
+          const templateComponents = data.template.widget_list.map((widget, index) => {
+            // Ensure position data is properly extracted and formatted
+            const position = widget.position && typeof widget.position === 'object' && 
+                            typeof widget.position.x === 'number' && 
+                            typeof widget.position.y === 'number' 
+                            ? widget.position 
+                            : { x: 100 + index * 50, y: 100 + index * 50 };
+            
+            console.log(`Loading widget ${index} position:`, position);
+            
+            return {
+              ...widget.widget_id,
+              instanceId: `template_${widget.widget_id?._id || widget._id}_${index}`,
+              position: position,
+              // Store pinConfig for reference
+              pinConfig: widget.pinConfig
+            };
+          });
           
           setComponents(templateComponents);
         }
@@ -332,16 +402,23 @@ const Playground = () => {
   };
 
   const handleComponentDrag = (component, newPosition) => {
+    // Store the last component position for grid highlighting
     setLastComponentPosition(newPosition);
-    setComponents(components.map(c => {
-      if (c.instanceId === component.instanceId) {
-        return {
-          ...c,
-          position: newPosition
-        };
-      }
-      return c;
-    }));
+    
+    // Ensure position values are always numbers
+    const validPosition = {
+      x: parseFloat(newPosition.x) || 0,
+      y: parseFloat(newPosition.y) || 0
+    };
+    
+    // Update components state - using functional update to avoid stale state issues
+    setComponents(prevComponents => 
+      prevComponents.map(c => 
+        c.instanceId === component.instanceId
+          ? { ...c, position: validPosition }
+          : c
+      )
+    );
   };
 
   const handleAddComponent = (widget) => {
@@ -554,32 +631,100 @@ const Playground = () => {
         // Extract pinConfig.id from component configuration
         if (config && config.pinConfig && config.pinConfig.id) {
           pinConfigId = config.pinConfig.id;
+        } 
+        // Check if the component has a direct pinConfig property
+        else if (component.pinConfig && component.pinConfig.id) {
+          pinConfigId = component.pinConfig.id;
         }
-      console.log("Checking Widget ID",component)
-        // Fix: Format widget_id correctly and ensure all fields match API expectations
+        // Check if the component has a direct pinConfig as an array
+        else if (component.pinConfig && Array.isArray(component.pinConfig) && component.pinConfig.length > 0) {
+          pinConfigId = component.pinConfig[0];
+        }
+        
+        console.log("Checking Widget ID", component);
+        console.log("Extracted pinConfigId:", pinConfigId, "Component requires pins:", component.pinRequired);
+        
+        // Fix: Use _id as the primary identifier, then fall back to widget_id or id
+        // Ensure it's always a string to prevent toString() errors
+        let widgetId = component._id || component.widget_id || component.id || null;
+
+        // Handle cases where widgetId might be an object with an _id property
+        if (widgetId && typeof widgetId === 'object' && widgetId._id) {
+          widgetId = widgetId._id;
+        }
+        
+        // Ensure it's a string or null
+        widgetId = widgetId ? String(widgetId) : null;
+        
+        // Debug: Log position data being saved
+        console.log(`Widget ${widgetId} position:`, component.position);
+        
+        // Ensure position has valid x and y values
+        const validPosition = {
+          x: component.position && typeof component.position.x === 'number' ? component.position.x : 0,
+          y: component.position && typeof component.position.y === 'number' ? component.position.y : 0
+        };
+        
+        // Mark if this widget has missing required pins
+        const hasMissingRequiredPins = component.pinRequired > 0 && !pinConfigId;
+        if (hasMissingRequiredPins) {
+          console.warn(`Widget ${component.name || widgetId} requires pins but none are configured!`);
+        }
+        
         return {
-          widget_id: component.widget_id || component._id,
-          pinConfig: pinConfigId ? [pinConfigId] : component.pinConfig || [],
-          pinValue: {
-            pinConfigId: {
-              value: 100,
-              min_value: 0,
-              max_value: 255,
-            },
-          },
-          position: component.position || { x: 0, y: 0 }
+          widget_id: widgetId,
+          pinConfig: pinConfigId ? [pinConfigId] : [],
+          position: validPosition,
+          _hasMissingRequiredPins: hasMissingRequiredPins // This flag will be used to filter out invalid widgets
         };
       });
+      
+      // Filter out widgets that are missing required pins
+      const validWidgetList = widgetList
+        .filter(widget => !widget._hasMissingRequiredPins)
+        .map(widget => {
+          // Remove the temporary flag we used for filtering
+          const { _hasMissingRequiredPins, ...cleanWidget } = widget;
+          return cleanWidget;
+        });
+      
+      if (validWidgetList.length !== widgetList.length) {
+        const skippedCount = widgetList.length - validWidgetList.length;
+        console.warn(`Skipped ${skippedCount} widgets that require pins but don't have them configured.`);
+        if (validWidgetList.length === 0) {
+          // Show alert if no valid widgets are left
+          alert(`Cannot save template: All widgets (${skippedCount}) require pin configuration. Please configure pins for your widgets using the settings (gear) icon on each widget before saving.`);
+          return; // Exit the function early
+        } else {
+          // Show warning but continue with valid widgets
+          alert(`Warning: ${skippedCount} widgets were skipped because they require pin configuration. Configure pins using the settings (gear) icon on each widget.`);
+        }
+      }
   
       // Prepare request payload - fix the format to exactly match API expectations
       const updateData = {
         template_name: templateDetails?.template?.template_name || "Unnamed Template",
-        widget_list: widgetList
+        widget_list: validWidgetList
       };
   
       console.log("Saving template with payload:", updateData);
   
       // Make API call to update template - ensure we're using the correct ID format
+      console.log("Using template ID for update:", templateId);
+      
+      // Filter out any widgets with null widget_id to prevent errors
+      const finalWidgetList = validWidgetList.filter(widget => widget.widget_id !== null);
+      
+      if (finalWidgetList.length !== validWidgetList.length) {
+        console.warn(`Filtered out ${validWidgetList.length - finalWidgetList.length} widgets with null IDs`);
+      }
+      
+      // Update the request data with final validated widget list
+      updateData.widget_list = finalWidgetList;
+      
+      // Debug: Log final payload before sending to server
+      console.log("Final template update payload:", JSON.stringify(updateData, null, 2));
+      
       const response = await fetch(
         API_ENDPOINTS.UPDATE_TEMPLATE(templateId),
         {
@@ -630,7 +775,25 @@ const Playground = () => {
       
     } catch (error) {
       console.error("Error saving template:", error);
-      alert(`Failed to save template: ${error.message}`);
+      
+      // Provide more detailed error information to help debugging
+      let errorMessage = error.message || "Unknown error occurred";
+      
+      // If there's a specific API error message in the error, try to extract and display it
+      if (errorMessage.includes("{") && errorMessage.includes("}")) {
+        try {
+          const errorJson = JSON.parse(errorMessage.substring(
+            errorMessage.indexOf("{"), 
+            errorMessage.lastIndexOf("}") + 1
+          ));
+          errorMessage = errorJson.message || errorMessage;
+        } catch (e) {
+          // If parsing fails, keep the original error message
+          console.warn("Failed to parse error JSON:", e);
+        }
+      }
+      
+      alert(`Failed to save template: ${errorMessage}`);
     }
   };
 
