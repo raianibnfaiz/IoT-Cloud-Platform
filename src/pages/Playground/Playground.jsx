@@ -181,6 +181,7 @@ const Playground = () => {
         if (data.template.widget_list.some(widget => widget.widget_id === null)) {
           // First, get all widgets for reference
           await fetchAvailableWidgets();
+          console.log("Creating components from template widgets widget_id == null :", data.template.widget_list);
           
           // Map the widget list to components, using availableWidgets for widget details
           const templateComponents = data.template.widget_list.map((widget, index) => {
@@ -198,9 +199,10 @@ const Playground = () => {
           });
           
           setComponents(templateComponents);
-          console.log("Created placeholder components:", templateComponents);
+          console.log("Created placeholder components widget_id_exists:", templateComponents);
         } else {
           // Convert template widgets to playground components
+          console.log("widgets:", data.template.widget_list);
           const templateComponents = data.template.widget_list.map((widget, index) => ({
             ...widget.widget_id,
             instanceId: `template_${widget.widget_id?._id || widget._id}_${index}`,
@@ -208,6 +210,8 @@ const Playground = () => {
             // Store pinConfig for reference
             pinConfig: widget.pinConfig
           }));
+
+          console.log("templateComponent:", templateComponents);
           
           setComponents(templateComponents);
         }
@@ -350,7 +354,7 @@ const Playground = () => {
     // Create new component with default values based on widget type
     const newComponent = {
       instanceId,
-      widget_id: instanceId,
+      widget_id: widget._id,
       name: widget.name,
       type: widget.type,
       image: widget.image,
@@ -532,6 +536,7 @@ const Playground = () => {
     try {
       // Prepare widget list for API
       const widgetList = components.map(component => {
+        console.log("Checking Widget ID",component)
         const config = parseWidgetConfig(component.image);
         let pinConfigId = null;
   
@@ -542,8 +547,15 @@ const Playground = () => {
       console.log("Checking Widget ID",component)
         // Fix: Format widget_id correctly and ensure all fields match API expectations
         return {
-          widget_id: component.widget_id || component.id,
-          pinConfig: pinConfigId ? [pinConfigId] : [],
+          widget_id: component.widget_id || component._id,
+          pinConfig: pinConfigId ? [pinConfigId] : component.pinConfig || [],
+          pinValue: {
+            pinConfigId: {
+              value: 100,
+              min_value: 0,
+              max_value: 255,
+            },
+          },
           position: component.position || { x: 0, y: 0 }
         };
       });
@@ -554,7 +566,7 @@ const Playground = () => {
         widget_list: widgetList
       };
   
-      console.log("Saving template with payload:", updateData.widget_list);
+      console.log("Saving template with payload:", updateData);
   
       // Make API call to update template - ensure we're using the correct ID format
       const response = await fetch(
@@ -584,26 +596,26 @@ const Playground = () => {
       alert("Template saved successfully!");
   
       // Optional: Also download a local JSON copy
-      const exportData = {
-        components: components.map(component => {
-          const config = parseWidgetConfig(component.image);
-          return {
-            id: component._id || component.id,
-            name: component.name,
-            type: config?.type || component.type,
-            position: component.position,
-            state: widgetStates[component.instanceId],
-            configuration: config
-          };
-        }),
-        timestamp: new Date().toISOString()
-      };
+      // const exportData = {
+      //   components: components.map(component => {
+      //     const config = parseWidgetConfig(component.image);
+      //     return {
+      //       id: component._id || component.id,
+      //       name: component.name,
+      //       type: config?.type || component.type,
+      //       position: component.position,
+      //       state: widgetStates[component.instanceId],
+      //       configuration: config
+      //     };
+      //   }),
+      //   timestamp: new Date().toISOString()
+      // };
   
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `playground_export_${new Date().toISOString().replace(/:/g, '-')}.json`;
-      link.click();
+      // const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      // const link = document.createElement('a');
+      // link.href = URL.createObjectURL(blob);
+      // link.download = `playground_export_${new Date().toISOString().replace(/:/g, '-')}.json`;
+      // link.click();
       
     } catch (error) {
       console.error("Error saving template:", error);
