@@ -38,6 +38,7 @@ const parseWidgetConfig = (imageProperty) => {
 const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick, onDrag }) => {
   const [position, setPosition] = useState({ x: component.position.x, y: component.position.y });
   const [isDragging, setIsDragging] = useState(false);
+  const [wasDragged, setWasDragged] = useState(false);
 
   const style = {
     zIndex: isDragging ? 999 : 1,
@@ -71,27 +72,37 @@ const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick
         timeConstant: 0,
         modifyTarget: target => target
       }}
-      onDragStart={() => setIsDragging(true)}
+      onDragStart={() => {
+        setIsDragging(true);
+        setWasDragged(false);
+      }}
       onDrag={(event, info) => {
         const newPosition = {
           x: position.x + info.delta.x,
           y: position.y + info.delta.y
         };
         setPosition(newPosition);
+        setWasDragged(true); // Mark that actual movement occurred
         onDrag(component, newPosition);
       }}
       onDragEnd={() => {
         setIsDragging(false);
+        // Keep track that this component was recently dragged
+        // This flag will be used to prevent the config modal from opening
       }}
-      dragConstraints={{ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }}
-      x={position.x}
-      y={position.y}
     >
       <Widget3D
         widget={component}
         isPreviewMode={false}
         onValueChanged={(value) => onValueChanged(component.instanceId, value)}
-        onConfigClick={onConfigClick}
+        onConfigClick={(widget) => {
+          // Only open the config modal if the component wasn't being dragged
+          if (!wasDragged) {
+            onConfigClick(widget);
+          }
+          // Reset the dragged state after a short delay
+          setTimeout(() => setWasDragged(false), 300);
+        }}
       />
       <motion.button
         onClick={() => onDelete(component.instanceId)}
@@ -350,7 +361,7 @@ const Playground = () => {
     // Create new component with default values based on widget type
     const newComponent = {
       instanceId,
-      widget_id: instanceId,
+      widget_id: widget._id,
       name: widget.name,
       type: widget.type,
       image: widget.image,

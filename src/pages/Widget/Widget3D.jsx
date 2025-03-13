@@ -578,10 +578,11 @@ const Widget3D = ({
   onConfigClick,
   scale = 1.5
 }) => {
-  // Remove unused isHovered state
-  // const [isHovered, setIsHovered] = useState(false);
   const [value, setValue] = useState(null);
+  const [isDragging, setIsDragging] = useState(false); // Add state to track dragging
   const config = parseWidgetConfig(widget);
+  
+ 
   
   // Extract the normalized type from the widget configuration
   const getNormalizedType = () => {
@@ -634,6 +635,12 @@ const Widget3D = ({
   const handleInteraction = () => {
     // If in preview mode or no onConfigClick handler, do nothing
     if (isPreviewMode) return;
+    
+    // If we are or were recently dragging, don't open the config modal
+    if (isDragging) {
+      setIsDragging(false);
+      return;
+    }
     
     // If we have a configuration handler, open the config modal
     if (onConfigClick) {
@@ -760,10 +767,13 @@ const Widget3D = ({
           duration: config?.animation?.hover?.duration ? config.animation.hover.duration / 1000 : 0.2 
         }
       }}
-      // Remove hover handlers since we don't need them anymore
-      // onHoverStart={() => setIsHovered(true)}
-      // onHoverEnd={() => setIsHovered(false)}
       onClick={handleInteraction}
+      // Add drag event handlers to track when dragging starts and ends
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={() => {
+        // Set a timeout to prevent the click handler from firing immediately
+        setTimeout(() => setIsDragging(false), 100);
+      }}
     >
       {/* Remove the config button since clicking anywhere will open the config modal */}
       {/* {!isPreviewMode && isHovered && (
