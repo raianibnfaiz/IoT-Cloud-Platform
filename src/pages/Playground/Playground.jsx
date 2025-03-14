@@ -591,6 +591,8 @@ const Playground = () => {
   };
 
   const handleReset = (updatedWidget) => {
+    console.log('Resetting widget:', updatedWidget);
+    updatedWidget.pinConfig = [];
     setComponents(components.map(component => {
       if (component.instanceId === updatedWidget.instanceId) {
         return {
@@ -673,6 +675,7 @@ const Playground = () => {
         }
         
         return {
+          instance_id: component.instanceId,
           widget_id: widgetId,
           pinConfig: pinConfigId ? [pinConfigId] : [],
           position: validPosition,

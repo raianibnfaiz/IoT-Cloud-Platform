@@ -282,8 +282,10 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
         );
         
         if (response.ok) {
+          let newPins  = await response.json();
           console.log(`Successfully reset virtual pin with ID: ${selectedPin}`);
-          console.log("virtual pins", virtualPins);
+          //console.log("virtual pins", virtualPins);
+          console.log("V pin", newPins);
           // Update the local virtualPins state to reflect the pin is now available
           // setVirtualPins(prevPins => 
           //   prevPins.map(pin => 
@@ -293,15 +295,13 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
           //   )
           // );
 
-          const newPins = virtualPins.map(pin =>
-            (pin._id) === selectedPin ? { ...pin, is_used: false } : pin
-          );
-          console.log("new pins 1", newPins);
+          
+         // console.log("new pins 1", newPins);
           // widgetConfig && widgetConfig.pinConfig && widgetConfig.pinConfig.id && widgetConfig.pinConfig.id == selectedPin && (widgetConfig.pinConfig = {});
           //setConfig(null);
         
           setVirtualPins(newPins);
-          console.log("virtual pins 2", virtualPins);
+          //console.log("virtual pins 2", virtualPins);
           // If pin was previously assigned, it's no longer considered "already selected"
           setIsPinAlreadySelected(false);
           
