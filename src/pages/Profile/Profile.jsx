@@ -204,29 +204,16 @@ const Profile = () => {
               
               <div>
                 <h3 className="text-slate-400 mb-1">User ID</h3>
-                {/* Badge style design for User ID with hexagon shape */}
-                <div className="flex items-center">
-                  <div className="bg-indigo-900/60 border-2 border-indigo-500/30 rounded-lg px-3 py-2 relative">
-                    <div className="absolute inset-0 bg-indigo-500/10 rounded-lg mix-blend-overlay"></div>
-                    <p className="font-mono text-indigo-300 tracking-wider">
-                      {user_id}
-                    </p>
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                  </div>
-                </div>
+                {/* Simplified User ID display without background design */}
+                <p className="font-mono text-indigo-300 tracking-wider">
+                  {user_id}
+                </p>
               </div>
               
               <div>
                 <h3 className="text-slate-400 mb-1">REGISTRATION DATE</h3>
-                {/* Calendar/time inspired design for Registration Date */}
-                <div className="bg-slate-700/40 rounded-lg border-l-4 border-amber-500 pl-3 pr-4 py-2 flex items-center">
-                  <span className="mr-2 text-amber-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                  </span>
-                  <p className="text-amber-200 font-medium">{creationDate}</p>
-                </div>
+                {/* Simplified Registration Date display without background design */}
+                <p className="text-indigo-200 font-medium">{creationDate}</p>
               </div>
               
               <div>

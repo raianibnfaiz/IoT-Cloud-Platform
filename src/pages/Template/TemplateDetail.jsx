@@ -300,7 +300,7 @@ const TemplateDetails = () => {
                                             strokeLinejoin="round"
                                             strokeWidth={2}
                                             d={
-                                                sidebarCol
+                                                sidebarCollapsed
                                                     ? "M4 6h16M4 12h16M4 18h16"
                                                     : "M4 6h16M4 12h8M4 18h16"
                                             }
