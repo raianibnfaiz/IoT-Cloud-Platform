@@ -11,17 +11,26 @@ import AuthContext from "../../context/AuthContext/AuthContext";
 const Profile = () => {
   const { signOutUser } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
+
+  const [creationDate, setCreationDate] = useState("Not available");
+  const [userLocale, setUserLocale] = useState("EN"); // Default locale
   
   // User data from session storage
   const username = sessionStorage.getItem("username")?.replace(/"/g, "") || "Guest";
   const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
   const user_id = sessionStorage.getItem("user_id") || "N/A";
-  const photoURL = sessionStorage.getItem("userPhoto");
+  const photoURL = sessionStorage.getItem("userPhoto")?.replace(/^"|"$/g, "");
   const role = "Developer"; // In your app, you might want to get this from session storage
   console.log(username, userEmail, user_id, photoURL);
   const token = sessionStorage.getItem("authToken");
+  const { user } = useContext(AuthContext);
   // Format user initials from username
+  if(user){
+    console.log(user ,user.reloadUserInfo.localId);
+  }
   const getUserInitials = () => {
     if (!username || username === "Guest") return "G";
     return username.charAt(0).toUpperCase();
@@ -40,11 +49,77 @@ const Profile = () => {
       });
   };
   
+  // Handle image loading error
+  const handleImageError = () => {
+    console.log("Failed to load profile image");
+    setImageError(true);
+  };
+  
+  // Handle image load success
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
   // Toggle menu
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
   console.log(token);
+
+  // Extract and format creation date from user object
+  useEffect(() => {
+    if (user && user.metadata && user.metadata.creationTime) {
+      // Format the creation time
+      const date = new Date(user.metadata.creationTime);
+      const formattedDate = date.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      setCreationDate(formattedDate);
+    } else if (user && user.createdAt) {
+      // Alternative property name
+      const date = new Date(user.createdAt);
+      const formattedDate = date.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      setCreationDate(formattedDate);
+    } else if (sessionStorage.getItem("userCreatedAt")) {
+      // Try getting from session storage
+      const createdAt = sessionStorage.getItem("userCreatedAt").replace(/"/g, "");
+      const date = new Date(createdAt);
+      const formattedDate = date.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      setCreationDate(formattedDate);
+    }
+    
+    // Extract locale information from the user object
+    if (user) {
+      // Try different possible paths for locale information
+      const locale = user.locale || 
+                     (user.settings && user.settings.locale) ||
+                     sessionStorage.getItem("userLocale")?.replace(/"/g, "") ||
+                     navigator.language?.split("-")[0]?.toUpperCase() || 
+                     "EN";
+                     
+      setUserLocale(locale);
+      console.log("User locale set to:", locale);
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -89,12 +164,33 @@ const Profile = () => {
         <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden">
           {/* Profile Header */}
           <div className="p-6 flex items-center gap-6">
-            <div className="h-24 w-24 rounded-full bg-emerald-500 flex items-center justify-center text-white text-4xl font-bold">
-              {getUserInitials()}
+            <div className="h-24 w-24 rounded-full overflow-hidden flex items-center justify-center bg-emerald-500 relative">
+              {/* Display photo if available, otherwise show initials */}
+              {photoURL && !imageError ? (
+                <img 
+                  src={photoURL} 
+                  alt={username} 
+                  className={`w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onError={handleImageError}
+                  onLoad={handleImageLoad}
+                />
+              ) : (
+                <span className="text-white text-4xl font-bold">{getUserInitials()}</span>
+              )}
             </div>
             <div>
-              <h1 className="text-3xl font-bold">{username}</h1>
-              <p className="text-slate-400">{userEmail}</p>
+              {/* Simple username without gradient */}
+              <h1 className="text-3xl font-bold text-white mb-2">
+                {username}
+              </h1>
+              
+              {/* Email with gradient design */}
+              <div className="bg-gradient-to-r from-emerald-500/20 to-blue-500/20 rounded-md p-2 backdrop-blur-sm">
+                <p className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400 font-bold relative inline-block">
+                  {userEmail}
+                </p>
+                <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-lg blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+              </div>
             </div>
           </div>
           
@@ -108,12 +204,29 @@ const Profile = () => {
               
               <div>
                 <h3 className="text-slate-400 mb-1">User ID</h3>
-                <p>{user_id}</p>
+                {/* Badge style design for User ID with hexagon shape */}
+                <div className="flex items-center">
+                  <div className="bg-indigo-900/60 border-2 border-indigo-500/30 rounded-lg px-3 py-2 relative">
+                    <div className="absolute inset-0 bg-indigo-500/10 rounded-lg mix-blend-overlay"></div>
+                    <p className="font-mono text-indigo-300 tracking-wider">
+                      {user_id}
+                    </p>
+                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
               </div>
               
               <div>
                 <h3 className="text-slate-400 mb-1">REGISTRATION DATE</h3>
-                <p>10:29 AM Feb 4, 2025</p>
+                {/* Calendar/time inspired design for Registration Date */}
+                <div className="bg-slate-700/40 rounded-lg border-l-4 border-amber-500 pl-3 pr-4 py-2 flex items-center">
+                  <span className="mr-2 text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                  <p className="text-amber-200 font-medium">{creationDate}</p>
+                </div>
               </div>
               
               <div>
@@ -128,7 +241,14 @@ const Profile = () => {
               
               <div>
                 <h3 className="text-slate-400 mb-1">LOCALE</h3>
-                <p>EN</p>
+                <div className="flex items-center">
+                  <div className="bg-slate-700/50 rounded-lg px-3 py-2 border-r-2 border-blue-400">
+                    <p className="font-medium text-blue-300">
+                      {userLocale}
+                      {user?.languageCode && <span className="text-xs ml-2 text-gray-400">({user.languageCode})</span>}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

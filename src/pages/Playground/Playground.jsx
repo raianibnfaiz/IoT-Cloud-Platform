@@ -71,7 +71,10 @@ const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick
 
   return (
     <motion.div
-      style={style}
+      style={{
+        ...style,
+        filter: isDragging ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.5))' : 'none',
+      }}
       className="group relative"
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ 
@@ -145,7 +148,7 @@ const DraggableComponent = ({ component, onValueChanged, onDelete, onConfigClick
       
       <motion.button
         onClick={() => onDelete(component.instanceId)}
-        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100"
+        className="absolute top-0 right-0 bg-red-600 hover:bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100"
         whileHover={{ scale: 1.2 }}
         whileTap={{ scale: 0.9 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -174,6 +177,45 @@ DraggableComponent.propTypes = {
 };
 
 const Playground = () => {
+  // Add this theme override style to ensure dark theme consistency
+  useEffect(() => {
+    // Add a style tag to enforce dark theme
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      .playground-dark-theme {
+        --bg-primary: #0f1419;
+        --bg-secondary: #1a1e26;
+        --bg-tertiary: #242a33;
+        --text-primary: #ffffff;
+        --text-secondary: #e1e5ea;
+        --text-muted: #b0b8c1;
+        --accent-blue: #3b82f6;
+        --accent-emerald: #10b981;
+        --accent-indigo: #6366f1;
+        --accent-amber: #f59e0b;
+        --danger: #ef4444;
+        --border-color: rgba(75, 85, 99, 0.4);
+      }
+      
+      /* Force color scheme to dark */
+      @media (prefers-color-scheme: light) {
+        .force-dark-theme {
+          color-scheme: dark !important;
+        }
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Add classes to body to enforce dark theme
+    document.body.classList.add('force-dark-theme', 'playground-dark-theme');
+    
+    // Cleanup on unmount
+    return () => {
+      document.head.removeChild(styleElement);
+      document.body.classList.remove('force-dark-theme', 'playground-dark-theme');
+    }
+  }, []);
+  
   const { templateId } = useParams();
   const navigate = useNavigate();
   const [components, setComponents] = useState([]);
@@ -945,15 +987,15 @@ const Playground = () => {
       case 'components':
         return (
           <>
-            <h2 className="text-lg font-bold mb-4 text-gray-100">Available Widgets</h2>
+            <h2 className="text-lg font-bold mb-4 text-white">Available Widgets</h2>
 
             {/* Show template information if template is loaded */}
             {templateDetails && (
-              <div className="mb-6 p-3 bg-gray-700 rounded-lg">
+              <div className="mb-6 p-3 bg-gray-700/60 border border-gray-600/50 rounded-lg">
                 <h3 className="text-md font-semibold text-white mb-2">Template Details</h3>
-                <p className="text-gray-300 text-sm">Name: {templateDetails.template.template_name}</p>
-                <p className="text-gray-300 text-sm">ID: {templateDetails.template.template_id}</p>
-                <p className="text-gray-300 text-sm">
+                <p className="text-gray-200 text-sm">Name: {templateDetails.template.template_name}</p>
+                <p className="text-gray-200 text-sm">ID: {templateDetails.template.template_id}</p>
+                <p className="text-gray-200 text-sm">
                   Available Pins: {availablePinsCount} / {totalPinsCount}
                 </p>
                 {availablePinsCount === 0 && totalPinsCount > 0 && (
@@ -1077,9 +1119,9 @@ const Playground = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <div className="bg-gray-700 p-4 flex justify-between items-center">
+    <div className="flex flex-col h-screen bg-gray-900 text-white">
+      {/* Header - Updated with consistent colors */}
+      <div className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
         <div className="flex-shrink-0 flex items-center">
           <Link
             to="/"
@@ -1098,7 +1140,7 @@ const Playground = () => {
         </div>
         <div className="flex space-x-4">
           {loadingTemplate ? (
-            <div className="px-3 py-1 bg-gray-600 text-white rounded flex items-center">
+            <div className="px-3 py-1 bg-gray-700 text-white rounded flex items-center">
               <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
               Loading Template...
             </div>
@@ -1106,21 +1148,24 @@ const Playground = () => {
             <>
               <button 
                 onClick={handlePreviewClick}
-                className="px-3 py-1 bg-indigo-900 text-white rounded hover:bg-indigo-700 transition-colors">
+                className="px-3 py-1 bg-indigo-700 hover:bg-indigo-600 text-white font-medium rounded transition-colors"
+              >
                 Preview
               </button>
               <button
                 onClick={handleExportPlayground}
-                className="px-3 py-1 bg-gray-900 border border-gray-300 rounded hover:bg-gray-200"
+                className="px-3 py-1 bg-blue-700 hover:bg-blue-600 text-white font-medium rounded transition-colors"
               >
                 Save
               </button>
               
-              <button className="px-3 py-1 bg-gray-700 border border-gray-300 rounded hover:bg-gray-200">
+              <button 
+                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded transition-colors"
+              >
                 Settings
               </button>
               <button
-                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                className="px-3 py-1 bg-emerald-700 hover:bg-emerald-600 text-white font-medium rounded transition-colors"
                 onClick={fetchAvailableWidgets}
               >
                 Refresh Widgets
@@ -1131,8 +1176,8 @@ const Playground = () => {
       </div>
 
       <div className="flex flex-1 overflow-hidden p-4">
-        {/* Sidebar navigation remains the same */}
-        <div className="w-16 bg-gray-800 flex flex-col items-center py-4">
+        {/* Sidebar - Updated to use consistent dark theme colors */}
+        <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4">
           {/* <button
             className={`p-3 rounded-md mb-2 ${activeSidebarTab === 'components'
                 ? 'bg-gray-700 text-white'
@@ -1181,7 +1226,7 @@ const Playground = () => {
           </button> */}
         </div>
 
-        <div className="flex-1 relative bg-gray-900 p-2 m-2 overflow-hidden" ref={gridRef}>
+        <div className="flex-1 relative bg-[#0f1419] p-2 m-2 overflow-hidden" ref={gridRef}>
           <div className="relative h-full w-full">
             {gridPattern}
             <AnimatePresence>
@@ -1199,12 +1244,12 @@ const Playground = () => {
           </div>
         </div>
 
-        <div className="w-64 bg-gray-800 p-4 overflow-y-auto">
+        <div className="w-64 bg-gray-800 border-l border-gray-700 p-4 overflow-y-auto">
           {renderSidebarContent()}
         </div>
       </div>
 
-      <footer className="bg-gray-800 text-white text-center py-2">
+      <footer className="bg-gray-800 border-t border-gray-700 text-gray-300 text-center py-2">
         <p>&copy; 2024 Cloud.Playground by BJIT</p>
       </footer>
 
@@ -1220,6 +1265,7 @@ const Playground = () => {
         templateId={templateId}
         onReset={handleReset}
         onVirtualPinUpdate={handleVirtualPinUpdate}
+        darkThemeOverride={true} // Pass prop to enforce dark theme in the modal
       />
     </div>
   );

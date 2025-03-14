@@ -11,7 +11,7 @@ const Navbar = () => {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userPhoto, setUserPhoto] = useState("");
-
+  
   useEffect(() => {
     // Get user info from session storage
     const storedName = sessionStorage.getItem('username');
@@ -20,7 +20,16 @@ const Navbar = () => {
     
     if (storedName) setUserName(JSON.parse(storedName));
     if (storedEmail) setUserEmail(JSON.parse(storedEmail));
-    if (storedPhoto) setUserPhoto(JSON.parse(storedPhoto));
+    if (storedPhoto) {
+      try {
+        const parsedPhoto = JSON.parse(storedPhoto);
+        setUserPhoto(parsedPhoto);
+      } catch (error) {
+        // If the photo URL is not in JSON format, use it directly
+        setUserPhoto(storedPhoto);
+        console.log("Using photo URL directly:", storedPhoto);
+      }
+    }
   }, [user]);
 
   // List of dropdown menu items for scalability
@@ -117,6 +126,30 @@ const Navbar = () => {
         duration: 0.2,
         ease: "easeOut"
       }
+    }
+  };
+
+  // Function to render profile image
+  const renderProfileImage = () => {
+    if (userPhoto && userPhoto !== "") {
+      return (
+        <img 
+          src={userPhoto} 
+          alt={userName || "User"} 
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            console.error("Error loading image:", e);
+            e.target.onerror = null;
+            e.target.src = ""; // Clear the src to avoid infinite error loops
+          }}
+        />
+      );
+    } else {
+      return (
+        <span className="text-white font-medium">
+          {userName ? userName[0].toUpperCase() : "U"}
+        </span>
+      );
     }
   };
 
@@ -228,13 +261,7 @@ const Navbar = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                    {userPhoto ? (
-                      <img src={userPhoto} alt={userName} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-white font-medium">
-                        {userName ? userName[0].toUpperCase() : "U"}
-                      </span>
-                    )}
+                    {renderProfileImage()}
                   </div>
                   <motion.svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -358,13 +385,7 @@ const Navbar = () => {
                 <div className="px-3 py-2 border-b border-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                      {userPhoto ? (
-                        <img src={userPhoto} alt={userName} className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="text-white font-medium">
-                          {userName ? userName[0].toUpperCase() : "U"}
-                        </span>
-                      )}
+                      {renderProfileImage()}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">{userName || "User"}</p>

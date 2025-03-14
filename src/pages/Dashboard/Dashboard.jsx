@@ -18,6 +18,43 @@ const Dashboard = () => {
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userPhoto, setUserPhoto] = useState("");
+  const [userInitial, setUserInitial] = useState("U");
+  const [imageError, setImageError] = useState(false);
+
+  // Function to get user's initial letter for fallback avatar
+  const getUserInitial = (name) => {
+    if (!name || name === "") return "U";
+    return name.charAt(0).toUpperCase();
+  };
+
+  // Handle image loading error
+  const handleImageError = () => {
+    console.error("Failed to load profile image");
+    setImageError(true);
+  };
+
+  // Get user data from session storage
+  useEffect(() => {
+    const storedName = sessionStorage.getItem('username');
+    const storedPhoto = sessionStorage.getItem('userPhoto');
+
+    if (storedName) {
+      const cleanName = storedName.replace(/^"|"$/g, "");
+      setUserInitial(getUserInitial(cleanName));
+    }
+
+    if (storedPhoto) {
+      try {
+        // Try to parse the photo URL from JSON if it's stored that way
+        const parsedPhoto = storedPhoto.replace(/^"|"$/g, "");
+        console.log("Profile image URL:", parsedPhoto);
+        setUserPhoto(parsedPhoto);
+      } catch (error) {
+        console.error("Error processing user photo:", error);
+      }
+    }
+  }, []);
 
   // Sample template data
   const [templates, setTemplates] = useState([]);
@@ -265,10 +302,59 @@ const Dashboard = () => {
                   <div className="relative" ref={userMenuRef}>
                     <button
                       onClick={toggleUserMenu}
-                      className="flex items-center focus:outline-none"
+                      className="flex items-center space-x-1 px-2 py-1 rounded-full hover:bg-gray-700/50 transition-colors duration-200 focus:outline-none"
                     >
-                      <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white cursor-pointer">
-                        <span className="text-sm font-medium">R</span>
+                      {/* Profile Picture */}
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center overflow-hidden">
+                        {userPhoto && !imageError ? (
+                          <img 
+                            src={userPhoto}
+                            alt={sessionStorage.getItem("username")?.replace(/"/g, "") || "User"} 
+                            className="h-full w-full object-cover"
+                            onError={handleImageError}
+                          />
+                        ) : (
+                          <span className="text-sm font-medium text-white">{userInitial}</span>
+                        )}
+                      </div>
+                      
+                      {/* Magnificent animated dropdown icon */}
+                      <div className="relative h-4 w-4 ml-1">
+                        {/* Background glow effect */}
+                        <div className={`absolute inset-0 rounded-full ${userMenuOpen ? 'bg-blue-500/20 animate-pulse' : ''}`}></div>
+                        
+                        {/* Dropdown arrows - animated */}
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className="h-4 w-4 text-gray-300 z-10 relative"
+                          viewBox="0 0 20 20" 
+                          fill="currentColor"
+                        >
+                          <motion.path 
+                            fillRule="evenodd" 
+                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" 
+                            clipRule="evenodd"
+                            animate={{ rotate: userMenuOpen ? 180 : 0, y: userMenuOpen ? 1 : 0 }}
+                            transition={{ 
+                              duration: 0.3, 
+                              type: "spring",
+                              stiffness: 260, 
+                              damping: 20 
+                            }}
+                            style={{ 
+                              transformOrigin: "center",
+                              fill: userMenuOpen ? "#60A5FA" : "#9CA3AF"
+                            }}
+                          />
+                        </svg>
+                        
+                        {/* Decorative dots that appear on hover/active */}
+                        <div className={`absolute ${userMenuOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 left-5 -top-0.5`}>
+                          <div className="h-1 w-1 rounded-full bg-blue-400 animate-pulse"></div>
+                        </div>
+                        <div className={`absolute ${userMenuOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 right-5 bottom-0`}>
+                          <div className="h-1 w-1 rounded-full bg-indigo-400 animate-pulse delay-150"></div>
+                        </div>
                       </div>
                     </button>
 
