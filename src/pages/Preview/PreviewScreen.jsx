@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
-
 
 const PreviewScreen = () => {
   const { templateId } = useParams();
@@ -15,7 +14,11 @@ const PreviewScreen = () => {
   const [widgetStates, setWidgetStates] = useState({});
   const [templateName, setTemplateName] = useState('Preview');
   const [isLoading, setIsLoading] = useState(true);
+  const [wsStatus, setWsStatus] = useState('disconnected'); // WebSocket connection status
   
+  // WebSocket ref to keep reference across renders
+  const webSocketRef = useRef(null);
+
   // Get template data from the location state or fetch it
   useEffect(() => {
     setIsLoading(true);
@@ -73,11 +76,85 @@ const PreviewScreen = () => {
     }
   }, [templateId, location.state]);
   
-  // Handle widget value changes
+  // Initialize WebSocket connection
+  useEffect(() => {
+    // Only connect WebSocket when we have components loaded
+    if (!isLoading && components.length > 0 && templateId) {
+      const token = sessionStorage.getItem('authToken');
+      
+      // Create WebSocket connection
+      // You would need to replace this URL with your actual WebSocket server URL
+      // Format might be something like: wss://your-api-domain.com/ws/template/${templateId}
+      //const wsUrl = `wss://api.example.com/ws/template/${templateId}?token=${token}`;
+      const wsUrl = `ws://localhost:8083`;
+      console.log('Connecting to WebSocket:', wsUrl);
+      
+      const ws = new WebSocket(wsUrl);
+      webSocketRef.current = ws;
+      
+      // WebSocket event handlers
+      ws.onopen = () => {
+        console.log('WebSocket connection established');
+        setWsStatus('connected');
+        
+        // Send initial handshake with template ID
+        ws.send(JSON.stringify({
+          type: 'init',
+          templateId: templateId
+        }));
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          console.log('WebSocket message received:', event.data);
+          const message = JSON.parse(event.data);
+          console.log('WebSocket message received:', message);
+          
+          // Handle different message types
+          if (message.type === 'widget_update') {
+            // Update the widget state when we receive updates from the server
+            setWidgetStates(prevStates => ({
+              ...prevStates,
+              [message.widgetId]: message.value
+            }));
+          } else if (message.type === 'bulk_update') {
+            // Handle bulk widget state updates
+            setWidgetStates(prevStates => ({
+              ...prevStates,
+              ...message.states
+            }));
+          }
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setWsStatus('error');
+      };
+      
+      ws.onclose = (event) => {
+        console.log('WebSocket connection closed:', event.code, event.reason);
+        setWsStatus('disconnected');
+      };
+      
+      // Clean up the WebSocket connection when the component unmounts
+      return () => {
+        console.log('Closing WebSocket connection');
+        if (webSocketRef.current) {
+          webSocketRef.current.close();
+          webSocketRef.current = null;
+        }
+      };
+    }
+  }, [isLoading, components, templateId]);
+  
+  // Handle widget value changes - now also sends updates via WebSocket
   const handleWidgetValueChange = (widgetId, newValue) => {
     console.log(`Widget ${widgetId} value changed to:`, newValue);
     
-    // Using function form of setState to ensure we're working with the latest state
+    // Update local state
     setWidgetStates(prevStates => {
       // Create a new object to avoid reference issues
       const updatedStates = { ...prevStates };
@@ -86,6 +163,32 @@ const PreviewScreen = () => {
       
       // Log all widget states for debugging
       console.log('All widget states after update:', updatedStates);
+      
+      // Send update to WebSocket after state is updated
+      if (webSocketRef.current && wsStatus === 'connected') {
+        // Get authentication token from session storage
+        const token = sessionStorage.getItem('authToken');
+        
+        // Find the component to get its virtual pin
+        const component = components.find(comp => comp.id === widgetId);
+        //console.log('Component:', component);
+        const virtualPin = component?.pinConfig && component.pinConfig.length > 0 && component.pinConfig[0].pin_id || 0; // Default to 0 if not found
+        console.log("virtualPin", virtualPin);
+        // Create message in the required format
+        const message = {
+          token: token,
+          V_P: virtualPin, // Use the component's virtual pin instead of hardcoded 2
+          data: newValue,
+          templateId: templateId,
+          widgetId: widgetId,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Send update via WebSocket
+        webSocketRef.current.send(JSON.stringify(message));
+        console.log('Sending widget update to server:', message);
+      }
+      
       return updatedStates;
     });
   };
@@ -122,6 +225,18 @@ const PreviewScreen = () => {
           Back to Editor
         </button>
         <h1 className="text-xl font-semibold text-white">{templateName} - Preview Mode</h1>
+        
+        {/* WebSocket connection status indicator */}
+        <div className="ml-auto flex items-center">
+          <div className={`w-3 h-3 rounded-full mr-2 ${
+            wsStatus === 'connected' ? 'bg-green-500' : 
+            wsStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+          }`}></div>
+          <span className="text-sm text-gray-300">
+            {wsStatus === 'connected' ? 'Live' : 
+             wsStatus === 'error' ? 'Connection Error' : 'Offline'}
+          </span>
+        </div>
       </header>
       
       {/* Main preview area */}
@@ -174,10 +289,13 @@ const PreviewScreen = () => {
       
       {/* Footer with information */}
       <footer className="px-4 py-3 bg-gray-800 border-t border-gray-700 text-gray-400 text-sm">
-        <p className="font-medium">Preview Mode - Interactive controls are enabled</p>
+        <p className="font-medium">
+          Preview Mode - Interactive controls are enabled 
+          {wsStatus === 'connected' && <span className="ml-2 text-green-400">• Real-time updates active</span>}
+        </p>
       </footer>
     </div>
   );
 };
 
-export default PreviewScreen; 
+export default PreviewScreen;
