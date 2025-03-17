@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
+import { WS_BASE_URL } from '../../config/apiEndpoints'; // Import the BASE_URL
 
 const PreviewScreen = () => {
   const { templateId } = useParams();
@@ -82,11 +83,9 @@ const PreviewScreen = () => {
     if (!isLoading && components.length > 0 && templateId) {
       const token = sessionStorage.getItem('authToken');
       
-      // Create WebSocket connection
-      // You would need to replace this URL with your actual WebSocket server URL
-      // Format might be something like: wss://your-api-domain.com/ws/template/${templateId}
-      //const wsUrl = `wss://api.example.com/ws/template/${templateId}?token=${token}`;
-      const wsUrl = `ws://localhost:8083`;
+      // Create WebSocket connection using the base URL from config
+      // Convert http:// to ws:// or https:// to wss://
+      const wsUrl = WS_BASE_URL
       console.log('Connecting to WebSocket:', wsUrl);
       
       const ws = new WebSocket(wsUrl);

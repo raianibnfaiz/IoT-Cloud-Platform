@@ -1,6 +1,11 @@
 const BASE_URL_LOCAL = 'http://localhost:3000';
 const BASE_URL_REMOTE = 'https://cloud-platform-server-for-bjit.onrender.com';
-const BASE_URL = BASE_URL_REMOTE;
+const BASE_URL = BASE_URL_LOCAL; // Change this to BASE_URL_REMOTE if you want to use the remote server
+
+// WebSocket base URLs
+const WS_BASE_URL_LOCAL = 'ws://localhost:8083';
+const WS_BASE_URL_REMOTE = 'wss://cloud-platform-server-for-bjit.onrender.com:443';
+const WS_BASE_URL = BASE_URL === BASE_URL_LOCAL ? WS_BASE_URL_LOCAL : WS_BASE_URL_REMOTE;
 
 const API_ENDPOINTS = {
   WIDGETS: `${BASE_URL}/widgets`,
@@ -12,4 +17,4 @@ const API_ENDPOINTS = {
   LOGIN: `${BASE_URL}/users/login`,
 };
 
-export { BASE_URL, API_ENDPOINTS };
+export { BASE_URL, WS_BASE_URL, API_ENDPOINTS };
