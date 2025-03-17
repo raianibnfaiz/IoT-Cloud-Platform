@@ -3,7 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
-import { WS_BASE_URL } from '../../config/apiEndpoints'; // Import the BASE_URL
+import { BASE_URL } from '../../config/apiEndpoints';
+import { io } from 'socket.io-client'; // Import socket.io-client
 
 const PreviewScreen = () => {
   const { templateId } = useParams();
@@ -15,10 +16,10 @@ const PreviewScreen = () => {
   const [widgetStates, setWidgetStates] = useState({});
   const [templateName, setTemplateName] = useState('Preview');
   const [isLoading, setIsLoading] = useState(true);
-  const [wsStatus, setWsStatus] = useState('disconnected'); // WebSocket connection status
+  const [wsStatus, setWsStatus] = useState('disconnected'); // Socket connection status
   
-  // WebSocket ref to keep reference across renders
-  const webSocketRef = useRef(null);
+  // Socket.io ref to keep reference across renders
+  const socketRef = useRef(null);
 
   // Get template data from the location state or fetch it
   useEffect(() => {
@@ -77,79 +78,117 @@ const PreviewScreen = () => {
     }
   }, [templateId, location.state]);
   
-  // Initialize WebSocket connection
+  // Initialize Socket.io connection instead of WebSocket
   useEffect(() => {
-    // Only connect WebSocket when we have components loaded
+    // Only connect Socket.io when we have components loaded
     if (!isLoading && components.length > 0 && templateId) {
       const token = sessionStorage.getItem('authToken');
       
-      // Create WebSocket connection using the base URL from config
-      // Convert http:// to ws:// or https:// to wss://
-      const wsUrl = WS_BASE_URL
-      console.log('Connecting to WebSocket:', wsUrl);
+      // Create Socket.io connection
+      // Using the correct format for Socket.io URL
+      console.log('Connecting to Socket.io:', BASE_URL);
       
-      const ws = new WebSocket(wsUrl);
-      webSocketRef.current = ws;
+      // Initialize socket connection with the proper path
+      const socket = io(BASE_URL, {
+        path: '/socket.io',
+        query: { 
+          token,
+          templateId 
+        },
+        transports: ['websocket'],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+      });
       
-      // WebSocket event handlers
-      ws.onopen = () => {
-        console.log('WebSocket connection established');
+      socketRef.current = socket;
+      
+      // Debug socket connection
+      console.log('Socket instance:', socket);
+      
+      // Socket.io event handlers
+      socket.on('connect', () => {
+        console.log('Socket.io connection established with ID:', socket.id);
         setWsStatus('connected');
         
         // Send initial handshake with template ID
-        ws.send(JSON.stringify({
-          type: 'init',
-          templateId: templateId
-        }));
-      };
+        socket.emit('join_template', { templateId });
+        console.log('Sent join_template event with:', { templateId });
+      });
       
-      ws.onmessage = (event) => {
+      // Listen for specific events from server
+      socket.on('widget_update', (message) => {
         try {
-          console.log('WebSocket message received:', event.data);
-          const message = JSON.parse(event.data);
-          console.log('WebSocket message received:', message);
+          console.log('Socket.io widget_update received:', message);
           
-          // Handle different message types
-          if (message.type === 'widget_update') {
-            // Update the widget state when we receive updates from the server
-            setWidgetStates(prevStates => ({
-              ...prevStates,
-              [message.widgetId]: message.value
-            }));
-          } else if (message.type === 'bulk_update') {
-            // Handle bulk widget state updates
-            setWidgetStates(prevStates => ({
-              ...prevStates,
-              ...message.states
-            }));
+          // Update the widget state when we receive updates from the server
+          setWidgetStates(prevStates => ({
+            ...prevStates,
+            [message.widgetId]: message.data // Make sure this matches the server's message format
+          }));
+        } catch (error) {
+          console.error('Error processing Socket.io message:', error);
+        }
+      });
+      
+      // Listen for all events (for debugging)
+      socket.onAny((event, ...args) => {
+        console.log('Socket.io received event:', event, args);
+      });
+      
+      socket.on("widget_update", (message) => {
+        console.log("Received widget_update message:", message);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('Socket.io connection error:', error);
+        setWsStatus('error');
+      });
+      
+      socket.on('disconnect', (reason) => {
+        console.log('Socket.io disconnected reason:', reason);
+        setWsStatus('disconnected');
+        
+        // Attempt to reconnect if not closed intentionally
+        if (reason === 'io server disconnect') {
+          // The disconnection was initiated by the server, reconnect manually
+          socket.connect();
+        }
+      });
+
+      // Listen for acknowledgment of updates sent from client to server
+      socket.on('widget_updated', (ack) => {
+        try {
+          console.log('Widget update acknowledgment received:', ack);
+          
+          if (ack.success) {
+            console.log(`Update to widget ${ack.widgetId} was successful for template ${ack.topic}`);
+            
+            // Optional: You could add visual feedback here, like a brief animation
+            // on the widget to show the update was successful
+            
+            // For example, you could maintain a state of recently updated widgets
+            // and show a brief "success" indicator on them
+          } else {
+            console.error('Widget update failed:', ack.error || 'Unknown error');
+            // Optionally handle the error, maybe revert the widget state
           }
         } catch (error) {
-          console.error('Error processing WebSocket message:', error);
+          console.error('Error processing widget update acknowledgment:', error);
         }
-      };
+      });
       
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setWsStatus('error');
-      };
-      
-      ws.onclose = (event) => {
-        console.log('WebSocket connection closed:', event.code, event.reason);
-        setWsStatus('disconnected');
-      };
-      
-      // Clean up the WebSocket connection when the component unmounts
+      // Clean up the Socket.io connection when the component unmounts
       return () => {
-        console.log('Closing WebSocket connection');
-        if (webSocketRef.current) {
-          webSocketRef.current.close();
-          webSocketRef.current = null;
+        console.log('Disconnecting Socket.io');
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+          socketRef.current = null;
         }
       };
     }
   }, [isLoading, components, templateId]);
   
-  // Handle widget value changes - now also sends updates via WebSocket
+  // Handle widget value changes - now also sends updates via Socket.io
   const handleWidgetValueChange = (widgetId, newValue) => {
     console.log(`Widget ${widgetId} value changed to:`, newValue);
     
@@ -160,32 +199,33 @@ const PreviewScreen = () => {
       // Only update the specific widget's state
       updatedStates[widgetId] = newValue;
       
-      // Log all widget states for debugging
-      console.log('All widget states after update:', updatedStates);
-      
-      // Send update to WebSocket after state is updated
-      if (webSocketRef.current && wsStatus === 'connected') {
+      // Send update to Socket.io after state is updated
+      if (socketRef.current && socketRef.current.connected) {
         // Get authentication token from session storage
         const token = sessionStorage.getItem('authToken');
         
         // Find the component to get its virtual pin
         const component = components.find(comp => comp.id === widgetId);
-        //console.log('Component:', component);
-        const virtualPin = component?.pinConfig && component.pinConfig.length > 0 && component.pinConfig[0].pin_id || 0; // Default to 0 if not found
-        console.log("virtualPin", virtualPin);
-        // Create message in the required format
+        const virtualPin = component?.pinConfig && component.pinConfig.length > 0 && component.pinConfig[0].pin_id || 0;
+        console.log("Sending update for virtualPin:", virtualPin);
+        
+        // Create message and emit to server
         const message = {
-          token: token,
-          V_P: virtualPin, // Use the component's virtual pin instead of hardcoded 2
+          token,
+          V_P: virtualPin,
           data: newValue,
-          templateId: templateId,
-          widgetId: widgetId,
+          templateId,
+          widgetId,
           timestamp: new Date().toISOString()
         };
         
-        // Send update via WebSocket
-        webSocketRef.current.send(JSON.stringify(message));
-        console.log('Sending widget update to server:', message);
+        socketRef.current.emit('update_widget', message, (response) => {
+          // This callback will be called if the server sends an acknowledgment directly
+          if (response) {
+            console.log('Direct acknowledgment received:', response);
+          }
+        });
+        console.log('Sent update_widget event:', message);
       }
       
       return updatedStates;
@@ -249,7 +289,7 @@ const PreviewScreen = () => {
         {/* Components */}
         {components.map((component) => {
           // Ensure we have a valid ID for the component
-          const componentId = component.id || component.instanceId || component._id;
+          const componentId = component.id || component.instanceId || component._id; // Fixed comp._id to component._id
           
           return (
             <motion.div
