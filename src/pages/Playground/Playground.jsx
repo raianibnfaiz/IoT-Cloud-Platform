@@ -686,7 +686,6 @@ const Playground = () => {
           pinConfigId = component.pinConfig[0];
         }
         
-        console.log("Checking Widget ID", component);
         console.log("Extracted pinConfigId:", pinConfigId, "Component requires pins:", component.pinRequired);
         
         // Fix: Use _id as the primary identifier, then fall back to widget_id or id
@@ -796,6 +795,9 @@ const Playground = () => {
       
       // Show success message to user
       alert("Template saved successfully!");
+
+      //fetch the template details again to update the widget list
+      fetchTemplateDetails();
   
       // Optional: Also download a local JSON copy
       // const exportData = {
