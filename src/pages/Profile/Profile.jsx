@@ -127,7 +127,7 @@ const Profile = () => {
       <nav className="bg-slate-800 px-6 py-4 flex justify-between items-center border-b border-slate-700">
         <Link to="/" className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">
-            RA
+            BJIT
           </div>
           <span className="text-xl font-semibold">Cloud.Console</span>
         </Link>
