@@ -95,7 +95,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
       if (widgetConfig && widgetConfig.state) {
         setMinValue(widgetConfig.state.min_value || 0);
         setMaxValue(widgetConfig.state.max_value || 100);
-        setCurrentValue(widgetConfig.state.default_value || 50);
+        setCurrentValue(widgetConfig.state.default_value || 0);
       }
 
         
