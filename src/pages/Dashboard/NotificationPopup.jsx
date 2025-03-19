@@ -4,15 +4,19 @@ import React, { useState, useEffect } from 'react';
 const NotificationPopup = ({ templateId, templateName, authToken, onClose }) => {
   const [copySuccess, setCopySuccess] = useState(false);
   
-  // Function to copy code block to clipboard
+  // Function to copy code block to clipboard and close the popup
   const copyCodeToClipboard = () => {
     const codeText = `const char* authToken  = "${authToken}";\nconst char* templateID = "${templateId}";`;
     
     navigator.clipboard.writeText(codeText)
       .then(() => {
         setCopySuccess(true);
-        // Reset success message after 2 seconds
-        setTimeout(() => setCopySuccess(false), 2000);
+        
+        // Close the popup after showing success message for 2 seconds
+        setTimeout(() => {
+          setCopySuccess(false);
+          onClose();
+        }, 2000);
       })
       .catch(err => {
         console.error('Failed to copy text: ', err);
@@ -34,8 +38,8 @@ const NotificationPopup = ({ templateId, templateName, authToken, onClose }) => 
       
       <div className="p-4">
         <div className="bg-gray-900 rounded p-3 mb-4 font-mono text-sm text-green-400 overflow-x-auto relative group">
-          <div>{`const char* authToken  = "${authToken}"`}</div>
-          <div>{`const char* templateID = "${templateId}"`}</div>
+          <div>{`const char* authToken  = "${authToken}";`}</div>
+          <div>{`const char* templateID = "${templateId}";`}</div>
           
           {/* Copy button for the code block */}
           <button 
@@ -49,11 +53,11 @@ const NotificationPopup = ({ templateId, templateName, authToken, onClose }) => 
           </button>
           
           {/* Success indicator */}
-          {copySuccess && (
+          {/* {copySuccess && (
             <div className="absolute top-2 right-10 bg-green-600 text-white px-2 py-1 rounded text-xs animate-fade-in-out">
               Copied!
             </div>
-          )}
+          )} */}
         </div>
         
         <p className="text-gray-300 text-sm mb-4">
@@ -62,13 +66,29 @@ const NotificationPopup = ({ templateId, templateName, authToken, onClose }) => 
         
         <div className="flex justify-end space-x-2">
           <button 
-            className="px-4 py-2 bg-gray-700 text-white rounded flex items-center hover:bg-gray-600"
+            className={`px-4 py-2 rounded flex items-center ${
+              copySuccess 
+                ? "bg-green-600 text-white" 
+                : "bg-gray-700 text-white hover:bg-gray-600"
+            }`}
             onClick={copyCodeToClipboard}
+            disabled={copySuccess}
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-            </svg>
-            Copy to clipboard
+            {copySuccess ? (
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Copied!
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Copy to clipboard
+              </>
+            )}
           </button>
         </div>
       </div>
