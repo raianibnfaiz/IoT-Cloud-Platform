@@ -5,6 +5,7 @@ import Widget3D from '../Widget/Widget3D';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
 import { BASE_URL } from '../../config/apiEndpoints';
 import { io } from 'socket.io-client'; // Import socket.io-client
+import { fetchTemplatesById } from '../../services/templateService'; // Import the template service
 
 const PreviewScreen = () => {
   const { templateId } = useParams();
@@ -24,9 +25,9 @@ const PreviewScreen = () => {
   // Get template data from the location state or fetch it
   useEffect(() => {
     setIsLoading(true);
-    
+    console.log('Location state:', location.state);
     // If state was passed directly via navigation
-    if (location.state?.components && location.state?.widgetStates) {
+    if (location.state?.components && location.state?.widgetStates && false) {
       // Process components to ensure consistent IDs
       const processedComponents = location.state.components.map(comp => {
         // Make sure each component has a consistent ID
@@ -60,10 +61,19 @@ const PreviewScreen = () => {
         .then(data => {
           if (data) {
             // Apply the same ID normalization to fetched data
-            const processedComponents = (data.components || []).map(comp => {
-              const id = comp.id || comp.instanceId || comp._id;
-              return { ...comp, id };
+            const processedComponents = (data.template.widget_list || []).map((comp, index) => {
+              const _id = comp.widget_id._id || comp.widget_id.instanceId || comp.widget_id.id;
+              const name = comp.widget_id.name;
+              const position = comp.position || { x: 0, y: 0 };
+              const image = comp.widget_id.image;
+              const pinRequired = comp.widget_id.pinRequired;
+              const pinConfig = comp.pinConfig;
+              const instanceId = `template_${comp.widget_id._id}_${index}`;
+
+              return { _id, name, image, pinRequired, pinConfig, position, instanceId };
             });
+
+            console.log('Fetched components:', processedComponents);
             
             setComponents(processedComponents);
             setWidgetStates(data.widgetStates || {});
@@ -203,9 +213,12 @@ const PreviewScreen = () => {
       if (socketRef.current && socketRef.current.connected) {
         // Get authentication token from session storage
         const token = sessionStorage.getItem('authToken');
+        console.log("Component for widget: all: ", components);
+        console.log("Component for widget: widgetId: ", widgetId);
         
         // Find the component to get its virtual pin
-        const component = components.find(comp => comp.id === widgetId);
+        const component = components.find(comp => comp.instanceId === widgetId);
+        console.log('Component for widget:', component);
         const virtualPin = component?.pinConfig && component.pinConfig.length > 0 && component.pinConfig[0].pin_id || 0;
         console.log("Sending update for virtualPin:", virtualPin);
         
@@ -230,6 +243,7 @@ const PreviewScreen = () => {
       
       return updatedStates;
     });
+    console.log('Updated widget states:', widgetStates);
   };
   
   // Navigate back to the playground

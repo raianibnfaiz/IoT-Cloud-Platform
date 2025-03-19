@@ -125,7 +125,7 @@ const SliderWidget = ({ config, value = 50, scale }) => {
         backgroundColor="#00000033"
         padding={0.05}
       >
-        {value}
+        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
       </Text>
     </group>
   );
@@ -257,7 +257,7 @@ const GaugeWidget = ({ config, value = 0, scale }) => {
         backgroundColor="#00000033"
         padding={0.05}
       >
-        {value}
+        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
       </Text>
       
       {/* Gauge ticks */}
@@ -308,7 +308,16 @@ const TextInputWidget = ({ config, value = '', scale }) => {
   const textColor = colors.text || '#212121';
   
   // Format value for display
-  const displayValue = value?.length > 8 ? value.substring(0, 8) + '...' : value || '';
+  let displayValue = '';
+  if (typeof value === 'object') {
+    displayValue = JSON.stringify(value).length > 8 ? 
+      JSON.stringify(value).substring(0, 8) + '...' : 
+      JSON.stringify(value) || '';
+  } else {
+    displayValue = String(value).length > 8 ? 
+      String(value).substring(0, 8) + '...' : 
+      String(value) || '';
+  }
   
   return (
     <group ref={inputRef} scale={scale}>
@@ -599,6 +608,13 @@ const Widget3D = ({
     return widget.id || widget.instanceId || widget._id || `widget-${Date.now()}`;
   }, [widget]);
   
+  // Helper function to safely convert values to strings for display
+  const safeToString = (value) => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  };
+  
   // Extract the normalized type from the widget configuration
   const getNormalizedType = () => {
     if (!widget) return 'unsupported';
@@ -661,7 +677,7 @@ const Widget3D = ({
       
       setValue(initialValue);
     }
-  }, [config, currentValue]);
+  }, [config, currentValue, value]);
 
   // Update method to use our consistent ID
   const updateParentValue = (newValue) => {
@@ -729,7 +745,7 @@ const Widget3D = ({
       onConfigClick();
     }
   };
-  
+
   // Create handlers for different widget types in preview mode
   const getInteractionHandlers = () => {
     if (!isPreviewMode || !isInteractive) return {};
@@ -770,6 +786,7 @@ const Widget3D = ({
               
               // Update internal state
               setValue(roundedValue);
+              
               // Notify parent using our consistent method
               updateParentValue(roundedValue);
             };
@@ -797,7 +814,6 @@ const Widget3D = ({
             document.addEventListener('pointermove', handlePointerMove);
             document.addEventListener('pointerup', handlePointerUp);
           },
-          
           // Prevent the click from opening a dialog or triggering other handlers
           onClick: (e) => {
             if (isSliderDragging) {
@@ -840,7 +856,7 @@ const Widget3D = ({
     setValue(color);
     updateParentValue(color);
   };
-  
+
   // Handle text input interactions in preview mode
   const handleTextInput = (isPreviewMode, isInteractive, value, setValue, onValueChanged) => {
     if (!isPreviewMode || !isInteractive) return;
@@ -1079,13 +1095,13 @@ const Widget3D = ({
       case 'gauge':
         return <GaugeWidget config={enhancedConfig} value={value} scale={widgetScale} />;
       case 'text_input':
-        return <TextInputWidget config={enhancedConfig} value={value} scale={widgetScale} />;
+        return <TextInputWidget config={enhancedConfig} value={safeToString(value)} scale={widgetScale} />;
       case 'number_input':
-        return <NumberInputWidget config={enhancedConfig} value={value} scale={widgetScale} />;
+        return <NumberInputWidget config={enhancedConfig} value={Number(value) || 0} scale={widgetScale} />;
       case 'togglebutton':
         return <ToggleButtonWidget config={enhancedConfig} isActive={value} scale={widgetScale} />;
       case 'color_picker':
-        return <ColorPickerWidget config={enhancedConfig} selectedColor={value} scale={widgetScale} />;
+        return <ColorPickerWidget config={enhancedConfig} selectedColor={safeToString(value)} scale={widgetScale} />;
       default:
         // Fallback to a simple box for unsupported types with more vibrant color
         return (
@@ -1099,7 +1115,7 @@ const Widget3D = ({
               anchorX="center"
               anchorY="middle"
             >
-              {normalizedType}
+              {safeToString(normalizedType)}
             </Text>
           </RoundedBox>
         );

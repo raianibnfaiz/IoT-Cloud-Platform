@@ -303,6 +303,7 @@ const Playground = () => {
             
             console.log(`Loading placeholder widget ${index} position:`, position);
             
+            console.log("WidGet: ", widget);
             return {
               _id: widget._id || `placeholder_${index}`,
               name: `Widget ${index + 1}`,
@@ -327,7 +328,7 @@ const Playground = () => {
                             : { x: 100 + index * 50, y: 100 + index * 50 };
             
             console.log(`Loading widget ${index} position:`, position);
-            
+            console.log("WidGet: ", widget);
             return {
               ...widget.widget_id,
               instanceId: `template_${widget.widget_id?._id || widget._id}_${index}`,
@@ -624,6 +625,9 @@ const Playground = () => {
       hasPinConfigId = true;
     }
     
+
+    console.log("hasPinAssigned", hasPinConfigId);
+    console.log("Checking widget with pin data:", widgetWithPinConfig);
     // Add a flag to indicate if the widget already has a selected pin
     widgetWithPinConfig.hasPinAssigned = hasPinConfigId;
     
@@ -686,7 +690,6 @@ const Playground = () => {
           pinConfigId = component.pinConfig[0];
         }
         
-        console.log("Checking Widget ID", component);
         console.log("Extracted pinConfigId:", pinConfigId, "Component requires pins:", component.pinRequired);
         
         // Fix: Use _id as the primary identifier, then fall back to widget_id or id
@@ -796,6 +799,9 @@ const Playground = () => {
       
       // Show success message to user
       alert("Template saved successfully!");
+
+      //fetch the template details again to update the widget list
+      fetchTemplateDetails();
   
       // Optional: Also download a local JSON copy
       // const exportData = {
