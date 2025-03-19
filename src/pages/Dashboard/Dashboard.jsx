@@ -6,6 +6,7 @@ import templateImage from "../../assets/image/template.jpeg";
 import { motion } from "framer-motion";
 import { Timer } from "three/examples/jsm/Addons.js";
 import { API_ENDPOINTS } from "../../config/apiEndpoints";
+import NotificationPopup from "./NotificationPopup";
 
 const Dashboard = () => {
   const token = sessionStorage.getItem("authToken");
@@ -21,6 +22,13 @@ const Dashboard = () => {
   const [userPhoto, setUserPhoto] = useState("");
   const [userInitial, setUserInitial] = useState("U");
   const [imageError, setImageError] = useState(false);
+   // Add these new state variables for the notification popup
+   const [showNotification, setShowNotification] = useState(false);
+   const [newTemplateInfo, setNewTemplateInfo] = useState({
+     templateId: '',
+     templateName: '',
+     authToken: ''
+   });
 
   // Function to get user's initial letter for fallback avatar
   const getUserInitial = (name) => {
@@ -161,6 +169,19 @@ const Dashboard = () => {
       }
 
       const data = await response.json();
+      
+      // Set the new template data for the notification popup
+      // Note: Adjust these fields according to your actual API response structure
+      setNewTemplateInfo({
+        templateId: data.template.template_id || generateTemplateId(), // Use actual ID or generate a placeholder
+        templateName: data.template.template_name,
+        authToken: data.template.auth_token || generateAuthToken() // Use actual token or generate a placeholder
+      });
+      
+      // Show the notification
+      setShowNotification(true);
+      
+      // Update templates list
       setTemplates([...templates, data.template]);
     } catch (err) {
       console.error(err);
@@ -170,6 +191,21 @@ const Dashboard = () => {
       fetchTemplates();
     }
   };
+  
+  // Helper functions to generate values if not provided by API
+  const generateTemplateId = () => {
+    return `TMPL${Math.random().toString(36).substring(2, 8)}${Math.random().toString(36).substring(2, 8)}`;
+  };
+  
+  const generateAuthToken = () => {
+    return `${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
+  };
+  
+  // Function to close the notification
+  const handleCloseNotification = () => {
+    setShowNotification(false);
+  };
+
 
   const handleCloseModal = () => {
     const modal = document.getElementById("templateModal");
@@ -319,7 +355,7 @@ const Dashboard = () => {
                       </div>
                       
                       {/* Magnificent animated dropdown icon */}
-                      <div className="relative h-4 w-4 ml-1">
+                      <div className="relative h-4 w-4 ml-1 cursor-pointer">
                         {/* Background glow effect */}
                         <div className={`absolute inset-0 rounded-full ${userMenuOpen ? 'bg-blue-500/20 animate-pulse' : ''}`}></div>
                         
@@ -350,7 +386,7 @@ const Dashboard = () => {
                         
                         {/* Decorative dots that appear on hover/active */}
                         <div className={`absolute ${userMenuOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 left-5 -top-0.5`}>
-                          <div className="h-1 w-1 rounded-full bg-blue-400 animate-pulse"></div>
+                          <div className="h-1 w-1 rounded-full bg-blue-400 animate-pulse "></div>
                         </div>
                         <div className={`absolute ${userMenuOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500 right-5 bottom-0`}>
                           <div className="h-1 w-1 rounded-full bg-indigo-400 animate-pulse delay-150"></div>
@@ -360,7 +396,7 @@ const Dashboard = () => {
 
                     {/* Dropdown Menu */}
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                      <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 cursor-pointer bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
                         <div className="px-4 py-3 border-b border-gray-700">
                           <p className="text-sm text-white font-medium">
                             {sessionStorage.getItem("username")?.replace(/"/g, "") || "User"}
@@ -385,7 +421,7 @@ const Dashboard = () => {
                         <div className="border-t border-gray-700"></div>
                         <button
                           onClick={handleSignOut}
-                          className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
+                          className="block w-full text-left px-4 py-2 text-sm cursor-pointer text-red-400 hover:bg-gray-700"
                         >
                           Sign out
                         </button>
@@ -740,6 +776,16 @@ const Dashboard = () => {
           </form>
         </div>
       </dialog>
+
+      {/* Notification popup */}
+      {showNotification && (
+        <NotificationPopup
+          templateId={newTemplateInfo.templateId}
+          templateName={newTemplateInfo.templateName}
+          authToken={token}
+          onClose={handleCloseNotification}
+        />
+      )}
     </div>
   );
 };

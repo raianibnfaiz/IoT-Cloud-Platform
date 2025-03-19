@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import  { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
     FaTags,
@@ -8,12 +8,17 @@ import {
     FaTrash,
     FaEdit,
     FaPlus,
+    FaCopy,
+    FaEye,
+    FaEyeSlash,
 } from "react-icons/fa";
 import AddWidgetModal from "./AddWidgetModal";
 import { API_ENDPOINTS } from "../../config/apiEndpoints";
+import AuthContext from "../../context/AuthContext/AuthContext";
 
 const TemplateDetails = () => {
     const { templateId } = useParams();
+    const { signOutUser } = useContext(AuthContext);
     const [darkMode, setDarkMode] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [templateDetails, setTemplateDetails] = useState(null);
@@ -23,6 +28,7 @@ const TemplateDetails = () => {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
     const [templateName, setTemplateName] = useState("");
+    const [templateIdCopySuccess, setTemplateIdCopySuccess] = useState(false);
     // Add these state variables to your component
     const [availableWidgets, setAvailableWidgets] = useState([]);
     const [loadingWidgets, setLoadingWidgets] = useState(false);
@@ -30,8 +36,34 @@ const TemplateDetails = () => {
         useState(true);
     const username = sessionStorage.getItem("username")?.replace(/"/g, "") || "Guest";
     const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
+    const photoURL = sessionStorage.getItem("userPhoto")?.replace(/^"|"$/g, "");
     const token = sessionStorage.getItem("authToken");
+    const [showFullToken, setShowFullToken] = useState(false);
+    const [copySuccess, setCopySuccess] = useState(false);
+    const { user } = useContext(AuthContext);
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
+    if (user) {
+        console.log(user, user.reloadUserInfo.localId);
+    }
+    const getUserInitials = () => {
+        if (!username || username === "Guest") return "G";
+        return username.charAt(0).toUpperCase();
+    };
+
+    // Handle sign out
+    const handleSignOut = () => {
+        signOutUser()
+            .then(() => {
+                console.log("Successful sign out");
+                sessionStorage.clear();
+
+            })
+            .catch((error) => {
+                console.log("Failed to sign out:", error);
+            });
+    };
     // Add this function to fetch widgets from the server
     const fetchAvailableWidgets = async () => {
         setLoadingWidgets(true);
@@ -57,7 +89,30 @@ const TemplateDetails = () => {
             setLoadingWidgets(false);
         }
     };
+    // Handle image loading error
+    const handleImageError = () => {
+        console.log("Failed to load profile image");
+        setImageError(true);
+    };
 
+    // Handle image load success
+    const handleImageLoad = () => {
+        setImageLoaded(true);
+    };
+    // Function to copy template ID to clipboard
+    const copyTemplateIdToClipboard = () => {
+        if (templateId) {
+            navigator.clipboard.writeText(templateId)
+                .then(() => {
+                    setTemplateIdCopySuccess(true);
+                    // Reset success message after 2 seconds
+                    setTimeout(() => setTemplateIdCopySuccess(false), 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy template ID:', err);
+                });
+        }
+    };
     // Call the function when the component mounts
     useEffect(() => {
         fetchAvailableWidgets();
@@ -155,7 +210,7 @@ const TemplateDetails = () => {
                         },
                     }
                 );
-                
+
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
@@ -217,11 +272,41 @@ const TemplateDetails = () => {
         }
     };
 
+    // Function to mask auth token
+    const maskToken = (token) => {
+        if (!token) return "No token available";
+        if (showFullToken) return token;
+
+        const firstPart = token.substring(0, 10);
+        const lastPart = token.substring(token.length - 6);
+        return `${firstPart}...${lastPart}`;
+    };
+
+    // Function to copy token to clipboard
+    const copyToClipboard = () => {
+        if (token) {
+            navigator.clipboard.writeText(token)
+                .then(() => {
+                    setCopySuccess(true);
+                    // Reset success message after 2 seconds
+                    setTimeout(() => setCopySuccess(false), 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy token:', err);
+                });
+        }
+    };
+
+    // Toggle token visibility
+    const toggleTokenVisibility = () => {
+        setShowFullToken(!showFullToken);
+    };
+
     // Display loading spinner while fetching data
     if (loading) {
         return (
             <div
-                className={`min-h-screen flex justify-center items-center ${darkMode ? "dark bg-slate-900" : "bg-slate-50"
+                className={`min-h-screen flex justify-center items-center ${darkMode ? "dark bg-slate-900" : "bg-slate-900"
                     }`}
             >
                 <div
@@ -250,7 +335,7 @@ const TemplateDetails = () => {
                     Template not found or an error occurred.
                 </h1>
                 <Link
-                    to="/"
+                    to="/dashboard"
                     className="mt-4 inline-block px-4 py-2 bg-emerald-500 text-white rounded-md"
                 >
                     Return to Dashboard
@@ -375,8 +460,19 @@ const TemplateDetails = () => {
                                             onClick={toggleUserMenu}
                                             className="flex items-center focus:outline-none"
                                         >
-                                            <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white cursor-pointer">
-                                                <span className="text-sm font-medium">R</span>
+                                            <div className="h-8 w-8 rounded-full overflow-hidden flex items-center justify-center bg-emerald-500 relative cursor-pointer">
+                                                {/* Display photo if available, otherwise show initials */}
+                                                {photoURL && !imageError ? (
+                                                    <img
+                                                        src={photoURL}
+                                                        alt={username}
+                                                        className={`w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                                        onError={handleImageError}
+                                                        onLoad={handleImageLoad}
+                                                    />
+                                                ) : (
+                                                    <span className="text-white text-4xl font-bold">{getUserInitials()}</span>
+                                                )}
                                             </div>
                                             <svg
                                                 className="ml-1 h-4 w-4 text-slate-500"
@@ -456,8 +552,8 @@ const TemplateDetails = () => {
                                                 </Link>
                                                 <div className="border-t border-slate-100 dark:border-slate-700"></div>
                                                 <a
-                                                    href="#"
-                                                    className="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                                    onClick={handleSignOut}
+                                                    className="block px-4 py-2 text-sm cursor-pointer text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                                                 >
                                                     <div className="flex items-center">
                                                         <svg
@@ -570,7 +666,7 @@ const TemplateDetails = () => {
                         <div className="p-4">
                             <div className="space-y-1">
                                 <Link
-                                    to="/"
+                                    to="/dashboard"
                                     className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-slate-300 hover:bg-slate-700 hover:text-white"
                                 >
                                     <svg
@@ -685,8 +781,8 @@ const TemplateDetails = () => {
                                             ))}
                                     </div> */}
 
-                                    {/* Widget list dropdown */}
-                                    {/* {widgetsExpanded &&
+                                {/* Widget list dropdown */}
+                                {/* {widgetsExpanded &&
                                         !sidebarCollapsed &&
                                         templateDetails.template.widget_list && (
                                             <div className="ml-4 pl-4 border-l border-slate-700 space-y-1 animate-fadeIn">
@@ -959,31 +1055,79 @@ const TemplateDetails = () => {
                                     <div className="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 mr-4">
                                         <FaIdBadge className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                                     </div>
-                                    <div>
+                                    <div className="w-full">
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
                                             Template ID
                                         </p>
-                                        <p className="text-lg font-semibold text-slate-800 dark:text-white">
-                                            {templateId}
-                                        </p>
+                                        <div className="flex items-center justify-between w-full">
+                                            <div className="flex-1 truncate mr-2">
+                                                <p className="text-sm font-mono bg-slate-100 dark:bg-slate-700 p-1.5 rounded overflow-hidden">
+                                                    {templateId}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <button
+                                                    onClick={() => copyTemplateIdToClipboard()}
+                                                    className={`p-1.5 rounded-md transition-all ${templateIdCopySuccess
+                                                        ? "bg-green-500 text-white"
+                                                        : "bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                                        }`}
+                                                    title="Copy to clipboard"
+                                                >
+                                                    <FaCopy size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {templateIdCopySuccess && (
+                                            <p className="text-xs text-green-500 mt-1 animate-fade-in-out">
+                                                Copied to clipboard!
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Auth Token Card */}
                             <div className="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                                 <div className="flex items-center">
                                     <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900 mr-4">
-                                        <FaTags className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                        <FaIdBadge className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                     </div>
-                                    <div>
+                                    <div className="w-full">
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                                            Widget Count
+                                            Auth Token
                                         </p>
-                                        <p className="text-lg font-semibold text-slate-800 dark:text-white">
-                                            {templateDetails.template.widget_list
-                                                ? templateDetails.template.widget_list.length
-                                                : 0}
-                                        </p>
+                                        <div className="flex items-center justify-between w-full">
+                                            <div className="flex-1 truncate mr-2">
+                                                <p className="text-sm font-mono bg-slate-100 dark:bg-slate-700 p-1.5 rounded overflow-hidden">
+                                                    {maskToken(token)}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center space-x-1">
+                                                <button
+                                                    onClick={toggleTokenVisibility}
+                                                    className="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-md bg-slate-200 dark:bg-slate-700 transition-colors"
+                                                    title={showFullToken ? "Hide token" : "Show token"}
+                                                >
+                                                    {showFullToken ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                                                </button>
+                                                <button
+                                                    onClick={copyToClipboard}
+                                                    className={`p-1.5 rounded-md transition-all ${copySuccess
+                                                        ? "bg-green-500 text-white"
+                                                        : "bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                                        }`}
+                                                    title="Copy to clipboard"
+                                                >
+                                                    <FaCopy size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {copySuccess && (
+                                            <p className="text-xs text-green-500 mt-1 animate-fade-in-out">
+                                                Copied to clipboard!
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -995,12 +1139,12 @@ const TemplateDetails = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                                            Last Updated
+                                            Widget Count
                                         </p>
                                         <p className="text-lg font-semibold text-slate-800 dark:text-white">
-                                            {new Date(
-                                                templateDetails.template.updated_at
-                                            ).toLocaleDateString()}
+                                            {templateDetails.template.widget_list
+                                                ? templateDetails.template.widget_list.length
+                                                : 0}
                                         </p>
                                     </div>
                                 </div>
@@ -1196,5 +1340,20 @@ const TemplateDetails = () => {
         </div>
     );
 };
+
+// Add a CSS animation for the fade-in-out effect
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+  @keyframes fadeInOut {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .animate-fade-in-out {
+    animation: fadeInOut 2s ease-in-out;
+  }
+`;
+document.head.appendChild(styleElement);
 
 export default TemplateDetails;
