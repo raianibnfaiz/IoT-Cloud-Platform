@@ -22,10 +22,15 @@ const PreviewScreen = () => {
   // Socket.io ref to keep reference across renders
   const socketRef = useRef(null);
 
+  // Add a useEffect to track widgetStates changes
+  useEffect(() => {
+    console.log('Updated widgetStates:', widgetStates);
+  }, [widgetStates]);
+
   // Get template data from the location state or fetch it
   useEffect(() => {
     setIsLoading(true);
-    console.log('Location state:', location.state);
+    
     // If state was passed directly via navigation
     if (location.state?.components && location.state?.widgetStates && false) {
       // Process components to ensure consistent IDs
@@ -70,13 +75,19 @@ const PreviewScreen = () => {
               const pinConfig = comp.pinConfig;
               const instanceId = `template_${comp.widget_id._id}_${index}`;
 
+              // Use functional update to ensure we have the latest state
+              setWidgetStates(prevStates => {
+                const updatedStates = { ...prevStates };
+                updatedStates[instanceId] = comp.pinConfig[0].value || 0;
+                return updatedStates;
+              });
+
               return { _id, name, image, pinRequired, pinConfig, position, instanceId };
             });
 
             console.log('Fetched components:', processedComponents);
             
             setComponents(processedComponents);
-            setWidgetStates(data.widgetStates || {});
             setTemplateName(data.name || 'Preview');
           }
           setIsLoading(false);
@@ -202,7 +213,7 @@ const PreviewScreen = () => {
   const handleWidgetValueChange = (widgetId, newValue) => {
     console.log(`Widget ${widgetId} value changed to:`, newValue);
     
-    // Update local state
+    // Update local state using functional update pattern
     setWidgetStates(prevStates => {
       // Create a new object to avoid reference issues
       const updatedStates = { ...prevStates };
@@ -213,8 +224,6 @@ const PreviewScreen = () => {
       if (socketRef.current && socketRef.current.connected) {
         // Get authentication token from session storage
         const token = sessionStorage.getItem('authToken');
-        console.log("Component for widget: all: ", components);
-        console.log("Component for widget: widgetId: ", widgetId);
         
         // Find the component to get its virtual pin
         const component = components.find(comp => comp.instanceId === widgetId);
@@ -240,10 +249,8 @@ const PreviewScreen = () => {
         });
         console.log('Sent update_widget event:', message);
       }
-      
       return updatedStates;
     });
-    console.log('Updated widget states:', widgetStates);
   };
   
   // Navigate back to the playground
