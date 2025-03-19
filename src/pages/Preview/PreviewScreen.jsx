@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Widget3D from '../Widget/Widget3D';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
@@ -88,7 +88,7 @@ const PreviewScreen = () => {
             console.log('Fetched components:', processedComponents);
             
             setComponents(processedComponents);
-            setTemplateName(data.name || 'Preview');
+            setTemplateName(data.template.template_name || 'Preview');
           }
           setIsLoading(false);
         })
@@ -277,17 +277,19 @@ const PreviewScreen = () => {
     <div className="flex flex-col min-h-screen bg-gray-900">
       {/* Header with back button */}
       <header className="flex items-center px-4 py-2 bg-gray-800 border-b border-gray-700">
-        <button 
-          onClick={handleBackToEdit}
-          className="flex items-center mr-4 text-blue-400 hover:text-blue-300"
-        >
-          <AiOutlineArrowLeft className="mr-1" />
-          Back to Editor
-        </button>
-        <h1 className="text-xl font-semibold text-white">{templateName} - Preview Mode</h1>
+        
+        <h1 className="text-xl font-semibold text-blue-200">{templateName} - <span className='text-lg font-semibold text-emerald-200'>Preview Mode</span></h1>
         
         {/* WebSocket connection status indicator */}
         <div className="ml-auto flex items-center">
+        <Link to= '/dashboard' className="flex items-center mr-4 text-emerald-600 hover:text-blue-300">
+        <button 
+          className="flex items-center mr-4 text-emerald-600 hover:text-blue-300 cursor-pointer"
+        >
+          
+          Dashboard
+        </button>
+        </Link>
           <div className={`w-3 h-3 rounded-full mr-2 ${
             wsStatus === 'connected' ? 'bg-green-500' : 
             wsStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'

@@ -1056,12 +1056,12 @@ const TemplateDetails = () => {
                                         <FaIdBadge className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                                     </div>
                                     <div className="w-full">
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        <p className="text-sm text-slate-300 dark:text-slate-400 ">
                                             Template ID
                                         </p>
-                                        <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center justify-between w-full my-1">
                                             <div className="flex-1 truncate mr-2">
-                                                <p className="text-sm font-mono bg-slate-100 dark:bg-slate-700 p-1.5 rounded overflow-hidden">
+                                                <p className="text-sm font-mono  p-1.5 rounded overflow-hidden">
                                                     {templateId}
                                                 </p>
                                             </div>
@@ -1094,23 +1094,17 @@ const TemplateDetails = () => {
                                         <FaIdBadge className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                     </div>
                                     <div className="w-full">
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        <p className="text-sm text-slate-300 dark:text-slate-400 ">
                                             Auth Token
                                         </p>
-                                        <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center justify-between w-full my-1">
                                             <div className="flex-1 truncate mr-2">
                                                 <p className="text-sm font-mono bg-slate-100 dark:bg-slate-700 p-1.5 rounded overflow-hidden">
                                                     {maskToken(token)}
                                                 </p>
                                             </div>
                                             <div className="flex items-center space-x-1">
-                                                <button
-                                                    onClick={toggleTokenVisibility}
-                                                    className="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-md bg-slate-200 dark:bg-slate-700 transition-colors"
-                                                    title={showFullToken ? "Hide token" : "Show token"}
-                                                >
-                                                    {showFullToken ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
-                                                </button>
+                                                
                                                 <button
                                                     onClick={copyToClipboard}
                                                     className={`p-1.5 rounded-md transition-all ${copySuccess
@@ -1138,10 +1132,10 @@ const TemplateDetails = () => {
                                         <FaCog className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 my-1">
                                             Widget Count
                                         </p>
-                                        <p className="text-lg font-semibold text-slate-800 dark:text-white">
+                                        <p className="text-lg font-semibold text-slate-800 dark:text-white  text-center">
                                             {templateDetails.template.widget_list
                                                 ? templateDetails.template.widget_list.length
                                                 : 0}
