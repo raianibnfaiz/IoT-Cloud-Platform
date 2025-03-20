@@ -1,6 +1,6 @@
 const BASE_URL_LOCAL = 'http://localhost:3000';
 const BASE_URL_REMOTE = 'https://cloud-platform-server-for-bjit.onrender.com';
-const BASE_URL = BASE_URL_REMOTE; // Change this to BASE_URL_REMOTE if you want to use the remote server
+const BASE_URL = BASE_URL_LOCAL; // Change this to BASE_URL_REMOTE if you want to use the remote server
 
 // WebSocket base URLs
 const WS_BASE_URL_LOCAL = 'ws://localhost:8083';
