@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { useState, useEffect, useRef, useContext } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link,useNavigate } from "react-router-dom";
 import {
     FaTags,
     FaIdBadge,
@@ -43,7 +43,10 @@ const TemplateDetails = () => {
     const { user } = useContext(AuthContext);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
-
+    const [templateToDelete, setTemplateToDelete] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(-1);
+    let navigate = useNavigate();
     if (user) {
         console.log(user, user.reloadUserInfo.localId);
     }
@@ -51,6 +54,50 @@ const TemplateDetails = () => {
         if (!username || username === "Guest") return "G";
         return username.charAt(0).toUpperCase();
     };
+    const closeDropdown = () => {
+        setDropdownOpen(-1);
+      };
+    const confirmDelete = (template_id) => {
+        setTemplateToDelete(template_id);
+        setShowDeleteModal(true);
+    };
+    const handleDelete = async (template_id) => {
+        window.location.href = "/dashboard";
+        try {
+            const response = await fetch(
+                API_ENDPOINTS.TEMPLATE_DETAILS(template_id),
+                {
+                    method: "DELETE",
+                    headers: {
+                        accept: "*/*",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.ok) {
+                console.log(`Template ${template_id} deleted successfully`);
+                setTemplates((prevTemplates) =>
+                    prevTemplates.filter(
+                        (template) => template.template_id !== template_id
+                    )
+                );
+                
+            } else {
+                console.error("Failed to delete the template");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+            setShowDeleteModal(false);
+        }
+    };
+    const handleDeleteModal = () => {
+        const modal = document.getElementById("deleteModal");
+        modal.close();
+        setShowDeleteModal(false);
+      }
+    
+
 
     // Handle sign out
     const handleSignOut = () => {
@@ -1041,12 +1088,45 @@ const TemplateDetails = () => {
                                         <span>Edit</span>
                                     </button>
                                 </Link>
-                                <button className="px-3 py-2 bg-red-100 dark:bg-red-900 rounded-md text-red-800 dark:text-red-200 flex items-center hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
+                                <button 
+                                onClick={() => {
+                                    confirmDelete(templateId);
+                                    closeDropdown();
+                                  }}
+                                className="px-3 py-2 bg-red-100 dark:bg-red-900 rounded-md text-red-800 dark:text-red-200 flex items-center hover:bg-red-200 dark:hover:bg-red-800 transition-colors">
                                     <FaTrash className="mr-1" />
                                     <span>Delete</span>
                                 </button>
                             </div>
                         </div>
+                        {/* Deletion Confirmation Modal */}
+                        {showDeleteModal && (
+                            <dialog id='deleteModal' open className="modal">
+                                <div className="modal-box w-1/4 max-w-sm rounded-lg">
+                                    <h2 className="text-2xl mb-6 font-bold text-center">
+                                        Confirm Deletion
+                                    </h2>
+                                    <p className="mb-4">
+                                        Are you sure you want to delete this template?
+                                    </p>
+                                    <div className="flex justify-end mt-6">
+                                        <button
+                                            className="btn w-1/2 p-2 mx-1 ml-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                                            onClick={() => handleDelete(templateToDelete)}
+                                        >
+                                            Yes, Delete
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleDeleteModal}
+                                            className="btn w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mx-1"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </dialog>
+                        )}
 
                         {/* Template Info Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -1104,7 +1184,7 @@ const TemplateDetails = () => {
                                                 </p>
                                             </div>
                                             <div className="flex items-center space-x-1">
-                                                
+
                                                 <button
                                                     onClick={copyToClipboard}
                                                     className={`p-1.5 rounded-md transition-all ${copySuccess
