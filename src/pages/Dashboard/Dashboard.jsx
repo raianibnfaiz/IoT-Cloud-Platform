@@ -212,6 +212,11 @@ const Dashboard = () => {
     modal.close();
     setTemplateName("");
   };
+  const handleDeleteModal = () => {
+    const modal = document.getElementById("deleteModal");
+    modal.close();
+    setShowDeleteModal(false);
+  }
 
   const handleOpenModal = () => {
     const modal = document.getElementById("templateModal");
@@ -685,7 +690,7 @@ const Dashboard = () => {
                 ))}
                 {/* Deletion Confirmation Modal */}
                 {showDeleteModal && (
-                  <dialog open className="modal">
+                  <dialog id ='deleteModal'  open className="modal">
                     <div className="modal-box w-1/4 max-w-sm rounded-lg">
                       <h2 className="text-2xl mb-6 font-bold text-center">
                         Confirm Deletion
@@ -695,15 +700,15 @@ const Dashboard = () => {
                       </p>
                       <div className="flex justify-end mt-6">
                         <button
-                          className="btn btn-success w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mr-2"
+                          className="btn w-1/2 p-2 mx-1 ml-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
                           onClick={() => handleDelete(templateToDelete)}
                         >
                           Yes, Delete
                         </button>
                         <button
                           type="button"
-                          onClick={handleCloseModal}
-                          className="btn w-1/2 p-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                          onClick={handleDeleteModal}
+                          className="btn w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mx-1"
                         >
                           Cancel
                         </button>
