@@ -1101,31 +1101,31 @@ const TemplateDetails = () => {
                         </div>
                         {/* Deletion Confirmation Modal */}
                         {showDeleteModal && (
-                            <dialog id='deleteModal' open className="modal">
-                                <div className="modal-box w-1/4 max-w-sm rounded-lg">
-                                    <h2 className="text-2xl mb-6 font-bold text-center">
-                                        Confirm Deletion
-                                    </h2>
-                                    <p className="mb-4">
-                                        Are you sure you want to delete this template?
-                                    </p>
-                                    <div className="flex justify-end mt-6">
-                                        <button
-                                            className="btn w-1/2 p-2 mx-1 ml-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
-                                            onClick={() => handleDelete(templateToDelete)}
-                                        >
-                                            Yes, Delete
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={handleDeleteModal}
-                                            className="btn w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mx-1"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </dialog>
+                           <dialog id='deleteModal' open className="modal">
+                           <div className="modal-box w-full max-w-sm mx-auto rounded-lg p-6 shadow-lg">
+                               <h2 className="text-xl font-bold text-center mb-4">
+                                   Confirm Deletion
+                               </h2>
+                               <p className="text-center mb-6">
+                                   Are you sure you want to delete this template?
+                               </p>
+                               <div className="flex justify-between gap-3 mt-6">
+                                   <button
+                                       type="button"
+                                       onClick={handleDeleteModal}
+                                       className="btn flex-1 py-2 px-4 bg-gray-400 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                                   >
+                                       Cancel
+                                   </button>
+                                   <button
+                                       className="btn flex-1 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                       onClick={() => handleDelete(templateToDelete)}
+                                   >
+                                       Delete
+                                   </button>
+                               </div>
+                           </div>
+                       </dialog>
                         )}
 
                         {/* Template Info Cards */}

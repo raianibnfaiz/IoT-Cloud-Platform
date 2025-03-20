@@ -698,18 +698,18 @@ const Dashboard = () => {
                       <p className="mb-4">
                         Are you sure you want to delete this template?
                       </p>
-                      <div className="flex justify-end mt-6">
+                      <div className="flex justify-between gap-3 mt-6">
                         <button
-                          className="btn w-1/2 p-2 mx-1 ml-2 text-red-500 border-red-500 rounded-lg hover:bg-red-500 hover:text-white"
+                          className="btn flex-1 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
                           onClick={() => handleDelete(templateToDelete)}
-                        >
+                      >
                           Yes, Delete
                         </button>
                         <button
                           type="button"
                           onClick={handleDeleteModal}
-                          className="btn w-1/2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 mx-1"
-                        >
+                          className="btn flex-1 py-2 px-4 bg-gray-400 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                                  >
                           Cancel
                         </button>
                       </div>
