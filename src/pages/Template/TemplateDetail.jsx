@@ -1110,18 +1110,19 @@ const TemplateDetails = () => {
                                    Are you sure you want to delete this template?
                                </p>
                                <div className="flex justify-between gap-3 mt-6">
+                                   
+                                   <button
+                                       className="btn flex-1 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                       onClick={() => handleDelete(templateToDelete)}
+                                   >
+                                       Delete
+                                   </button>
                                    <button
                                        type="button"
                                        onClick={handleDeleteModal}
                                        className="btn flex-1 py-2 px-4 bg-gray-400 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
                                    >
                                        Cancel
-                                   </button>
-                                   <button
-                                       className="btn flex-1 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                                       onClick={() => handleDelete(templateToDelete)}
-                                   >
-                                       Delete
                                    </button>
                                </div>
                            </div>
