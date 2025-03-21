@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 import AuthContext from './AuthContext';
 import auth from '../../firebase/firebase.init';
+import { BASE_URL, API_ENDPOINTS } from '../../config/apiEndpoints';
 
 const googleProvider = new GoogleAuthProvider();
 const AuthProvider = ({ children }) => {
@@ -12,6 +13,7 @@ const AuthProvider = ({ children }) => {
         setLoading(true);
         const result = await signInWithPopup(auth, googleProvider);
         const idToken = await result.user.getIdToken();
+        console.log("Google User:", idToken);
         const name = result.user.displayName;
         sessionStorage.setItem('username', JSON.stringify(name));
         sessionStorage.setItem('userEmail', JSON.stringify(result.user.email));
@@ -22,11 +24,10 @@ const AuthProvider = ({ children }) => {
         // Alternatively, you can store it in cookies
         // document.cookie = `authToken=${idToken}; path=/;`;
 
-        const response = await fetch("https://cloud-platform-server-for-bjit.onrender.com/users/login", {
+        const response = await fetch(API_ENDPOINTS.LOGIN, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${idToken}`
             },
             body: JSON.stringify({
                 user_email: result.user.email,
