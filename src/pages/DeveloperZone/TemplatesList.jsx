@@ -8,7 +8,7 @@ const TemplatesList = ({ templates, setTemplates }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(-1);
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
     const fetchData = async () => {

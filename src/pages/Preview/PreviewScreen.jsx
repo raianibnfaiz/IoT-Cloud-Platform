@@ -103,7 +103,7 @@ const PreviewScreen = () => {
   useEffect(() => {
     // Only connect Socket.io when we have components loaded
     if (!isLoading && components.length > 0 && templateId) {
-      const token = sessionStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken');
       
       // Create Socket.io connection
       // Using the correct format for Socket.io URL
@@ -223,7 +223,7 @@ const PreviewScreen = () => {
       // Send update to Socket.io after state is updated
       if (socketRef.current && socketRef.current.connected) {
         // Get authentication token from session storage
-        const token = sessionStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken');
         
         // Find the component to get its virtual pin
         const component = components.find(comp => comp.instanceId === widgetId);

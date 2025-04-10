@@ -9,7 +9,7 @@ const DeveloperZone = () => {
     const [message, setMessage] = useState('');
     const [templates, setTemplates] = useState([]); 
 
-    const token = sessionStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
 
     const handleTemplateNameChange = (e) => {
         setTemplateName(e.target.value);

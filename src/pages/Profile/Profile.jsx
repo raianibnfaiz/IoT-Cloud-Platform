@@ -19,13 +19,13 @@ const Profile = () => {
   const [userLocale, setUserLocale] = useState("EN"); // Default locale
   
   // User data from session storage
-  const username = sessionStorage.getItem("username")?.replace(/"/g, "") || "Guest";
-  const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
-  const user_id = sessionStorage.getItem("user_id") || "N/A";
-  const photoURL = sessionStorage.getItem("userPhoto")?.replace(/^"|"$/g, "");
+  const username = localStorage.getItem("username")?.replace(/"/g, "") || "Guest";
+  const userEmail = localStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
+  const user_id = localStorage.getItem("user_id") || "N/A";
+  const photoURL = localStorage.getItem("userPhoto")?.replace(/^"|"$/g, "");
   const role = "Developer"; // In your app, you might want to get this from session storage
   console.log(username, userEmail, user_id, photoURL);
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
   const { user } = useContext(AuthContext);
   // Format user initials from username
   if(user){
@@ -41,7 +41,7 @@ const Profile = () => {
     signOutUser()
       .then(() => {
         console.log("Successful sign out");
-        sessionStorage.clear();
+        localStorage.clear();
     
       })
       .catch((error) => {
@@ -92,9 +92,9 @@ const Profile = () => {
         year: 'numeric'
       });
       setCreationDate(formattedDate);
-    } else if (sessionStorage.getItem("userCreatedAt")) {
+    } else if (localStorage.getItem("userCreatedAt")) {
       // Try getting from session storage
-      const createdAt = sessionStorage.getItem("userCreatedAt").replace(/"/g, "");
+      const createdAt = localStorage.getItem("userCreatedAt").replace(/"/g, "");
       const date = new Date(createdAt);
       const formattedDate = date.toLocaleString('en-US', {
         hour: 'numeric',
@@ -112,7 +112,7 @@ const Profile = () => {
       // Try different possible paths for locale information
       const locale = user.locale || 
                      (user.settings && user.settings.locale) ||
-                     sessionStorage.getItem("userLocale")?.replace(/"/g, "") ||
+                     localStorage.getItem("userLocale")?.replace(/"/g, "") ||
                      navigator.language?.split("-")[0]?.toUpperCase() || 
                      "EN";
                      

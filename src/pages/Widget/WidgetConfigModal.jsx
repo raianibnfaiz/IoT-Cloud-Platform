@@ -23,7 +23,7 @@ const fetchTemplateVirtualPins = async (templateId) => {
       return [];
     }
     
-    const token = sessionStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
     const response = await fetch(API_ENDPOINTS.TEMPLATE_DETAILS(templateId), {
       method: 'GET',
       headers: {
@@ -192,7 +192,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
     // If a pin is selected, update its information in the backend
     if (selectedPin) {
       try {
-        const token = sessionStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken');
         const selectedPinData = virtualPins.find(pin => (pin._id || pin.pin_id) === selectedPin);
         
         if (selectedPinData) {
@@ -267,7 +267,7 @@ const WidgetConfigModal = ({ widget, isOpen, onClose, onSave, templateId, onRese
     // If a pin is currently selected, attempt to delete it first
     if (selectedPin) {
       try {
-        const token = sessionStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken');
         
         // Make the DELETE request to free up the virtual pin
         const response = await fetch(

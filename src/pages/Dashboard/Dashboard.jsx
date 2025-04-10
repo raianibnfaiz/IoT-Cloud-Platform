@@ -9,7 +9,7 @@ import { API_ENDPOINTS } from "../../config/apiEndpoints";
 import NotificationPopup from "./NotificationPopup";
 
 const Dashboard = () => {
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
   const [loading, setLoading] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const { signOutUser } = useContext(AuthContext);
@@ -44,8 +44,8 @@ const Dashboard = () => {
 
   // Get user data from session storage
   useEffect(() => {
-    const storedName = sessionStorage.getItem('username');
-    const storedPhoto = sessionStorage.getItem('userPhoto');
+    const storedName = localStorage.getItem('username');
+    const storedPhoto = localStorage.getItem('userPhoto');
 
     if (storedName) {
       const cleanName = storedName.replace(/^"|"$/g, "");
@@ -350,7 +350,7 @@ const Dashboard = () => {
                         {userPhoto && !imageError ? (
                           <img 
                             src={userPhoto}
-                            alt={sessionStorage.getItem("username")?.replace(/"/g, "") || "User"} 
+                            alt={localStorage.getItem("username")?.replace(/"/g, "") || "User"} 
                             className="h-full w-full object-cover"
                             onError={handleImageError}
                           />
@@ -404,10 +404,10 @@ const Dashboard = () => {
                       <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 cursor-pointer bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
                         <div className="px-4 py-3 border-b border-gray-700">
                           <p className="text-sm text-white font-medium">
-                            {sessionStorage.getItem("username")?.replace(/"/g, "") || "User"}
+                            {localStorage.getItem("username")?.replace(/"/g, "") || "User"}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "user@example.com"}
+                            {localStorage.getItem("userEmail")?.replace(/"/g, "") || "user@example.com"}
                           </p>
                         </div>
 

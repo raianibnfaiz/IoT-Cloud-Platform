@@ -14,9 +14,9 @@ const Navbar = () => {
   
   useEffect(() => {
     // Get user info from session storage
-    const storedName = sessionStorage.getItem('username');
-    const storedEmail = sessionStorage.getItem('userEmail');
-    const storedPhoto = sessionStorage.getItem('userPhoto');
+    const storedName = localStorage.getItem('username');
+    const storedEmail = localStorage.getItem('userEmail');
+    const storedPhoto = localStorage.getItem('userPhoto');
     
     if (storedName) setUserName(JSON.parse(storedName));
     if (storedEmail) setUserEmail(JSON.parse(storedEmail));

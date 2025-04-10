@@ -234,7 +234,7 @@ const Playground = () => {
   const [availablePinsCount, setAvailablePinsCount] = useState(0);
   const [totalPinsCount, setTotalPinsCount] = useState(0);
 
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
 
   // Fetch template details if templateId is provided
   useEffect(() => {
@@ -542,7 +542,7 @@ const Playground = () => {
       // If we found a valid pin ID and have a template ID, delete the virtual pin
       if (pinId && templateId) {
         try {
-          const token = sessionStorage.getItem('authToken');
+          const token = localStorage.getItem('authToken');
           const response = await fetch(
             API_ENDPOINTS.DELETE_VIRTUAL_PIN(pinId, templateId),
             {

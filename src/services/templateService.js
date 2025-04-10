@@ -9,7 +9,7 @@ import { API_ENDPOINTS } from '../config/apiEndpoints';
  */
 export const fetchTemplatesById = async (templateId) => {
     // Get the authentication token from session storage
-    const token = sessionStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
 
     if (!token) {
         throw new Error('Authentication token not found');

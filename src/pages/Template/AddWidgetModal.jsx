@@ -10,7 +10,7 @@ const AddWidgetModal = ({ templateId, templateDetails, availableWidgets }) => {
   const [requiredPinCount, setRequiredPinCount] = useState(0);
   const [addingWidget, setAddingWidget] = useState(false);
   const temp_id = templateDetails.template.template_id;
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
   // Reset selected pins when widget changes
   useEffect(() => {
     if (selectedWidget) {

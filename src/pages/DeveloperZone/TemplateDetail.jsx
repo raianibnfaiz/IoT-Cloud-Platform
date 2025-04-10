@@ -30,10 +30,10 @@ const TemplateDetails = () => {
   const [loadingWidgets, setLoadingWidgets] = useState(false);
   const [availableWidgetsExpanded, setAvailableWidgetsExpanded] =
     useState(true);
-  const username = sessionStorage.getItem("username")?.replace(/"/g, "") || "Guest";
-  const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
+  const username = localStorage.getItem("username")?.replace(/"/g, "") || "Guest";
+  const userEmail = localStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
   const [virtualPins, setVirtualPins] = useState([]);
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
   console.log("Available widgets:", availableWidgets);
   // Add this function to fetch widgets from the server
   const fetchAvailableWidgets = async () => {
@@ -67,7 +67,7 @@ const TemplateDetails = () => {
     signOutUser()
       .then(() => {
         console.log("Successful sign out");
-        sessionStorage.clear();
+        localStorage.clear();
     
       })
       .catch((error) => {

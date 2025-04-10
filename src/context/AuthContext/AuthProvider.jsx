@@ -15,9 +15,9 @@ const AuthProvider = ({ children }) => {
         const idToken = await result.user.getIdToken();
         console.log("Google User:", idToken);
         const name = result.user.displayName;
-        sessionStorage.setItem('username', JSON.stringify(name));
-        sessionStorage.setItem('userEmail', JSON.stringify(result.user.email));
-        sessionStorage.setItem('userPhoto', JSON.stringify(result.user.photoURL));
+        localStorage.setItem('username', JSON.stringify(name));
+        localStorage.setItem('userEmail', JSON.stringify(result.user.email));
+        localStorage.setItem('userPhoto', JSON.stringify(result.user.photoURL));
         
         // Store the token in session storage
        
@@ -40,8 +40,8 @@ const AuthProvider = ({ children }) => {
         if (data.token) {
             console.log("Server Response Token:", data.token);
             setUser(data.user);
-            sessionStorage.setItem('authToken', data.token);
-            sessionStorage.setItem('user_id', data.user.user_id);
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('user_id', data.user.user_id);
 
             // Redirect to the dashboard
             window.location.href = '/dashboard';

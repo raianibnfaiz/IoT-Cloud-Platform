@@ -34,10 +34,10 @@ const TemplateDetails = () => {
     const [loadingWidgets, setLoadingWidgets] = useState(false);
     const [availableWidgetsExpanded, setAvailableWidgetsExpanded] =
         useState(true);
-    const username = sessionStorage.getItem("username")?.replace(/"/g, "") || "Guest";
-    const userEmail = sessionStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
-    const photoURL = sessionStorage.getItem("userPhoto")?.replace(/^"|"$/g, "");
-    const token = sessionStorage.getItem("authToken");
+    const username = localStorage.getItem("username")?.replace(/"/g, "") || "Guest";
+    const userEmail = localStorage.getItem("userEmail")?.replace(/"/g, "") || "No email available";
+    const photoURL = localStorage.getItem("userPhoto")?.replace(/^"|"$/g, "");
+    const token = localStorage.getItem("authToken");
     const [showFullToken, setShowFullToken] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
     const { user } = useContext(AuthContext);
@@ -104,7 +104,7 @@ const TemplateDetails = () => {
         signOutUser()
             .then(() => {
                 console.log("Successful sign out");
-                sessionStorage.clear();
+                localStorage.clear();
 
             })
             .catch((error) => {
@@ -1081,7 +1081,14 @@ const TemplateDetails = () => {
                             <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 md:mb-0">
                                 {templateDetails.template.template_name}
                             </h1>
+                            
                             <div className="flex items-center space-x-2">
+                            <Link to={`/preview/${templateId}`}>
+                                    <button className="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-800 dark:text-white flex items-center hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                        <FaEdit className="mr-1" />
+                                        <span>Preview</span>
+                                    </button>
+                                </Link>
                                 <Link to={`/playground/${templateId}`}>
                                     <button className="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-800 dark:text-white flex items-center hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                                         <FaEdit className="mr-1" />
