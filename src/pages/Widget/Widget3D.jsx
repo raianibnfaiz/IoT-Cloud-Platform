@@ -1158,9 +1158,9 @@ const Widget3D = ({
         
         {renderWidget()}
         
-        {!isPreviewMode && (
-          <WidgetLabel text={config?.name || widget.name} />
-        )}
+        {/* Show widget label in both modes - modified to always display the name */}
+        
+        <WidgetLabel text={widget.name || config?.name || widget.name || 'Widget'} />
         
         <OrbitControls 
           enableZoom={false} 

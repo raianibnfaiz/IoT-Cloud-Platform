@@ -68,7 +68,7 @@ const PreviewScreen = () => {
             // Apply the same ID normalization to fetched data
             const processedComponents = (data.template.widget_list || []).map((comp, index) => {
               const _id = comp.widget_id._id || comp.widget_id.instanceId || comp.widget_id.id;
-              const name = comp.widget_id.name;
+              const name = comp.widget_name || comp.widget_id.name || `Widget ${index + 1}`;
               const position = comp.position || { x: 0, y: 0 };
               const image = comp.widget_id.image;
               const pinRequired = comp.widget_id.pinRequired;
@@ -313,7 +313,7 @@ const PreviewScreen = () => {
         {components.map((component) => {
           // Ensure we have a valid ID for the component
           const componentId = component.id || component.instanceId || component._id; // Fixed comp._id to component._id
-          
+         console.log('Rendering component:', component);
           return (
             <motion.div
               key={componentId}
